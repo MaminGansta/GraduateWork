@@ -56,13 +56,6 @@ target_link_libraries(
     OpenCL.lib
 )
 
-# Resources
-add_custom_command(TARGET Framework PRE_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory
-                   ${PROJECT_SOURCE_DIR}/resources
-                   $<TARGET_FILE_DIR:Framework>/resources)
-
-
 # Add dll Macro
 set(dll_dir ${PROJECT_SOURCE_DIR}/../dependencies/dll CACHE INTERNAL "dll_dir")
 

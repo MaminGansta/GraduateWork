@@ -2,9 +2,9 @@
 
 #include "bubble.h"
 
-struct TestWindow : Bubble::Module
+struct TestWindow : Module
 {
-	void Draw(Bubble::DeltaTime dt) override
+	void Draw(DeltaTime dt) override
 	{
 		ImGui::Begin("TestWindow", &mIsOpen);
 			ImGui::Button("button", { 100, 100 });

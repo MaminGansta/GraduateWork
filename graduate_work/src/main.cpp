@@ -1,15 +1,22 @@
 
 #include "bubble.h"
 
-#include "ui/test_window.h"
+#include "ui/main_window.h"
+#include "UI/image_window.h"
 
 
-struct MyApplication : Bubble::Application
+struct MyApplication : Application
 {
+	MyApplication()
+		: Application("Image segmentation")
+	{}
+
 	void OnCreate()
 	{
-		GetWindow().SetVSync(false);
-		Bubble::UI::AddModule(Bubble::CreateScope<TestWindow>());
+		UI::AddModule(CreateScope<TestWindow>());
+
+		Ref<Texture2D> image = CreateRef<Texture2D>("resources/images/nature.jpg");
+		UI::AddModule(CreateScope<ImageWindow>(image));
 	}
 
 	void OnUpdate(Bubble::DeltaTime dt)
@@ -23,7 +30,7 @@ struct MyApplication : Bubble::Application
 	}
 };
 
-Bubble::Application* CreateApplication()
+Application* CreateApplication()
 {
 	return new MyApplication;
 }

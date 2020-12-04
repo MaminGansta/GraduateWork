@@ -14,5 +14,12 @@ set_target_properties(
     CXX_STANDARD_REQUIRED ON
 )
 
+# Gpu proccessing framework
 target_link_libraries(GraduateWork Framework)
 add_dll(GraduateWork)
+
+# Resources
+add_custom_command(TARGET GraduateWork PRE_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                   ${PROJECT_SOURCE_DIR}/resources
+                   $<TARGET_FILE_DIR:GraduateWork>/resources)
