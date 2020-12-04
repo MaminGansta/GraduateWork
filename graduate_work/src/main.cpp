@@ -17,6 +17,15 @@ struct MyApplication : Application
 
 		Ref<Texture2D> image = CreateRef<Texture2D>("resources/images/nature.jpg");
 		UI::AddModule(CreateScope<ImageWindow>(image));
+
+		std::vector<cl::Platform> platforms;
+		cl::Platform::get(&platforms);
+
+		std::vector<cl::Device> devices;
+		platforms[0].getDevices(CL_DEVICE_TYPE_GPU, &devices);
+
+		cl::string name = devices[0].getInfo<CL_DEVICE_VENDOR>();
+
 	}
 
 	void OnUpdate(Bubble::DeltaTime dt)
