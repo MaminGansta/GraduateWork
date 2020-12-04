@@ -1,0 +1,74 @@
+cmake_minimum_required(VERSION 3.12)
+project(Framework VERSION 0.0.0)
+
+
+file(GLOB_RECURSE SRCS *.cpp)
+file(GLOB_RECURSE HDRS *.h)
+
+add_library(Framework ${SRCS} ${HDRS})
+
+target_link_libraries(Framework imgui)
+
+set_target_properties(
+    Framework PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+)
+
+# Defines
+add_definitions(-D"GLEW_STATIC")
+add_definitions(-D"GLM_FORCE_SWIZZLE")
+add_definitions(-D"STBI_WINDOWS_UTF8")
+add_definitions(-D"STB_IMAGE_IMPLEMENTATION")
+
+# Include directories
+target_include_directories(
+    Framework PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/ui
+    ${CMAKE_CURRENT_SOURCE_DIR}/core
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/renderer
+    ${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/imgui
+    ${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/stb_image
+    ${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/SDL2/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/GLEW/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/spdlog/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/glm/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/opencl3/include
+)
+
+# Libraries directories
+target_link_directories(
+    Framework PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/SDL2/lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/GLEW/lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/opencl3/lib
+)
+
+# Libraries
+target_link_libraries(
+    Framework
+    SDL2main.lib
+    SDL2.dll
+    glew32s.lib
+    opengl32.lib
+    OpenCL.lib
+)
+
+# Resources
+add_custom_command(TARGET Framework PRE_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                   ${PROJECT_SOURCE_DIR}/resources
+                   $<TARGET_FILE_DIR:Framework>/resources)
+
+
+# Add dll Macro
+set(dll_dir ${PROJECT_SOURCE_DIR}/../dependencies/dll CACHE INTERNAL "dll_dir")
+
+macro(add_dll ProjectName)
+  add_custom_command(TARGET ${ProjectName} PRE_BUILD
+                     COMMAND ${CMAKE_COMMAND} -E copy_directory
+                     ${dll_dir}
+                     $<TARGET_FILE_DIR:${ProjectName}>)
+endmacro()

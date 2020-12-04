@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 3.12)
+project(GraduateWork VERSION 0.0.0)
+
+
+file(GLOB_RECURSE SRCS *.cpp)
+file(GLOB_RECURSE HDRS *.h)
+
+add_executable(GraduateWork ${SRCS} ${HDRS})
+
+
+set_target_properties(
+    GraduateWork PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+)
+
+target_link_libraries(GraduateWork Framework)
+add_dll(GraduateWork)
