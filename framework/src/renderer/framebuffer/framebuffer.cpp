@@ -6,48 +6,46 @@ namespace Bubble
 	Framebuffer::Framebuffer(const FramebufferSpecification& spec)
 		: mSpecification(spec)
 	{
+		SetDefaultAttachemtSpec();
 		Invalidate();
 	}
 
-	Framebuffer::Framebuffer(int width, int height)
-		: mSpecification({ {width, height} })
+	Framebuffer::Framebuffer(uint32_t width, uint32_t height)
+		: mSpecification({width, height})
+	{
+		SetDefaultAttachemtSpec();
+		Invalidate();
+	}
+
+	Framebuffer::Framebuffer(Texture2D&& color, Texture2D&& depth)
+		: mColorAttachment(std::move(color)),
+		  mDepthAttachment(std::move(depth))
 	{
 		Invalidate();
 	}
 
 	Framebuffer::Framebuffer(Framebuffer&& other) noexcept
 	{
-		// Rebind
 		mRendererID = other.mRendererID;
-		mColorAttachment = other.mColorAttachment;
-		mDepthAttachment = other.mDepthAttachment;
+		mColorAttachment = std::move(other.mColorAttachment);
+		mDepthAttachment = std::move(other.mDepthAttachment);
 		mSpecification = other.mSpecification;
-
-		// Make invalid
+		
 		other.mRendererID = 0;
-		other.mColorAttachment = 0;
-		other.mDepthAttachment = 0;
 	}
 
 	Framebuffer& Framebuffer::operator= (Framebuffer&& other) noexcept
 	{
 		if (this != &other)
 		{
-			// Clear
 			glDeleteFramebuffers(1, &mRendererID);
-			glDeleteTextures(1, &mColorAttachment);
-			glDeleteTextures(1, &mDepthAttachment);
-
-			// Rebind
+			
 			mRendererID = other.mRendererID;
-			mColorAttachment = other.mColorAttachment;
-			mDepthAttachment = other.mDepthAttachment;
+			mColorAttachment = std::move(other.mColorAttachment);
+			mDepthAttachment = std::move(other.mDepthAttachment);
 			mSpecification = other.mSpecification;
 
-			// Make invalid
 			other.mRendererID = 0;
-			other.mColorAttachment = 0;
-			other.mDepthAttachment = 0;
 		}
 		return *this;
 	}
@@ -56,62 +54,68 @@ namespace Bubble
 	void Framebuffer::Create(const FramebufferSpecification& spec)
 	{
 		mSpecification = spec;
+		SetDefaultAttachemtSpec();
 		Invalidate();
+	}
+
+	void Framebuffer::SetColorAttachment(Texture2D&& texture)
+	{
+		mColorAttachment = std::move(texture);
+	}
+
+	void Framebuffer::SetDepthAttachment(Texture2D&& texture)
+	{
+		mDepthAttachment = std::move(texture);
+	}
+
+	Bubble::Texture2D&& Framebuffer::GetColorAttachment()
+	{
+		return std::move(mColorAttachment);
+	}
+
+	Bubble::Texture2D&& Framebuffer::GetDepthAttachment()
+	{
+		return std::move(mDepthAttachment);
 	}
 
 	Framebuffer::~Framebuffer()
 	{
 		glDeleteFramebuffers(1, &mRendererID);
-		glDeleteTextures(1, &mColorAttachment);
-		glDeleteTextures(1, &mDepthAttachment);
 	}
 
 	void Framebuffer::Invalidate()
 	{
 		glDeleteFramebuffers(1, &mRendererID);
-		glDeleteTextures(1, &mColorAttachment);
-		glDeleteTextures(1, &mDepthAttachment);
-
 		glcall(glGenFramebuffers(1, &mRendererID));
 		glcall(glBindFramebuffer(GL_FRAMEBUFFER, mRendererID));
 
-		// Color
-		glcall(glGenTextures(1, &mColorAttachment));
-		glcall(glBindTexture(GL_TEXTURE_2D, mColorAttachment));
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
-			GetWidth(), GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mColorAttachment, 0);
+		if (mColorAttachment.GetWidth() != mSpecification.Width &&
+			mColorAttachment.GetHeight() != mSpecification.Height)
+		{
+			mColorAttachment.Resize({ mSpecification.Width, mSpecification.Height });
+		}
 
-		// Depth
-		glcall(glGenTextures(1, &mDepthAttachment));
-		glcall(glBindTexture(GL_TEXTURE_2D, mDepthAttachment));
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
-			GetWidth(), GetHeight(), 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-		
-		float border_color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, mDepthAttachment, 0);
+		if (mDepthAttachment.GetWidth() != mSpecification.Width &&
+			mDepthAttachment.GetHeight() != mSpecification.Height)
+		{
+			mDepthAttachment.Resize({ mSpecification.Width, mSpecification.Height });
+		}
 
-		// Something going wrong
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, GetColorAttachmentRendererID(), 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, GetDepthAttachmentRendererID(), 0);
+
 		BUBBLE_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete!");
-
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	int Framebuffer::GetWidth() const
 	{
-		return mSpecification.Size.x;
+		return mSpecification.Width;
 	}
 
 	int Framebuffer::GetHeight() const
 	{
-		return mSpecification.Size.y;
+		return mSpecification.Height;
 	}
 
 	void Framebuffer::Bind() const
@@ -127,18 +131,17 @@ namespace Bubble
 
 	const glm::ivec2& Framebuffer::GetSize() const
 	{
-		return mSpecification.Size;
+		return { GetWidth(), GetHeight() };
 	}
 
 	void Framebuffer::Resize(glm::ivec2 size)
 	{
-		if ((size.x * size.y) <= 0) {
+		if (size.x < 0 || size.y < 0) {
+			LOG_CORE_ERROR("Invalid framebuffer resize params width: {} height: {}", size.x, size.y);
 			return;
 		}
-		else if (size.x < size.y) {
-			size.x = size.y;
-		}
-		mSpecification.Size = size;
+		mSpecification.Width = size.x;
+		mSpecification.Height = size.y;
 		Invalidate();
 	}
 
@@ -149,7 +152,25 @@ namespace Bubble
 
 	uint32_t Framebuffer::GetColorAttachmentRendererID()
 	{
-		return mColorAttachment;
+		return mColorAttachment.GetRendererID();
+	}
+
+	uint32_t Framebuffer::GetDepthAttachmentRendererID()
+	{
+		return mDepthAttachment.GetRendererID();
+
+	}
+
+	void Framebuffer::SetDefaultAttachemtSpec()
+	{
+		// Color attachment uses default preset
+
+		// Depth attachment
+		mDepthAttachment.mSpecification.ChanelFormat = GL_FLOAT;
+		mDepthAttachment.mSpecification.DataFormat = GL_DEPTH_COMPONENT;
+		mDepthAttachment.mSpecification.InternalFormat = GL_DEPTH_COMPONENT;
+		mDepthAttachment.mSpecification.WrapS = GL_CLAMP_TO_BORDER;
+		mDepthAttachment.mSpecification.WrapT = GL_CLAMP_TO_BORDER;
 	}
 
 }

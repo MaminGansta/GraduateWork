@@ -8,118 +8,68 @@ namespace Bubble
 {
 	Texture2D::Texture2D(const glm::vec4& color)
 	{
-		mWidth = 1;
-		mHeight = 1;
-		mInternalFormat = GL_RGBA;
-		mDataFormat = GL_UNSIGNED_BYTE;
-
-		glcall(glGenTextures(1, &mRendererID));
-		glcall(glBindTexture(GL_TEXTURE_2D, mRendererID));
-		glcall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &color));
-
-		glcall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-		glcall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-
-		glcall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
-		glcall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
+		mSpecification.Width = 1;
+		mSpecification.Height = 1;
+		mSpecification.InternalFormat = GL_RGBA;
+		mSpecification.DataFormat = GL_UNSIGNED_BYTE;
+		mSpecification.MinFiler = GL_NEAREST;
+		mSpecification.MagFilter = GL_NEAREST;
+		mSpecification.WrapS = GL_REPEAT;
+		mSpecification.WrapT = GL_REPEAT;
+		Invalidate();
 	}
 
 
 	Texture2D::Texture2D(const Texture2DSpecification& spec)
-		: mWidth(spec.Width),
-		  mHeight(spec.Height)
+		: mSpecification(spec)
 	{
-		mInternalFormat = spec.InternalFormat;
-		mDataFormat = spec.DataFormat;
-
-		glcall(glGenTextures(1, &mRendererID));
-		glcall(glBindTexture(GL_TEXTURE_2D, mRendererID));
-		glcall(glTexImage2D(GL_TEXTURE_2D, 0, spec.InternalFormat, spec.Width, spec.Height, 0, spec.DataFormat, GL_UNSIGNED_BYTE, nullptr));
-		
-		glcall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, spec.MinFiler));
-		glcall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, spec.MagFilter));
-		
-		glcall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, spec.WrapS));
-		glcall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, spec.WrapT));
-
-		if (spec.WrapS == GL_CLAMP_TO_BORDER || spec.WrapT == GL_CLAMP_TO_BORDER)
-		{
-			glcall(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, (float*)&spec.BorderColor));
-		}
-
+		Invalidate();
 	}
 
 
 	Texture2D::Texture2D(const std::string& path, const Texture2DSpecification& spec)
+		: mSpecification(spec)
 	{
-		stbi_set_flip_vertically_on_load(spec.Flip);
-		int width, height, channels;
 		stbi_uc* data = nullptr;
-		
+		int width, height, channels;
+
+		stbi_set_flip_vertically_on_load(spec.Flip);
 		data = stbi_load(path.c_str(), &width, &height, &channels, 0);
 		
 		if (data == nullptr)
 			throw std::runtime_error("Failed to load image!\nPath: " + path);
 
-		mWidth = width;
-		mHeight = height;
+		mSpecification.Width = width;
+		mSpecification.Height = height;
 
-		GLenum internal_format = 0;
-		GLenum data_format = 0;
-		if (channels == 1)
+		switch (channels)
 		{
-			internal_format = GL_R8;
-			data_format = GL_RED;
+			case 1:
+				mSpecification.InternalFormat = GL_R8;
+				mSpecification.DataFormat = GL_RED;
+				break;
+			case 3:
+				mSpecification.InternalFormat = GL_RGB8;
+				mSpecification.DataFormat = GL_RGB;
+				break;
+			case 4:
+				mSpecification.InternalFormat = GL_RGBA8;
+				mSpecification.DataFormat = GL_RGBA;
+				break;
+			default:
+				BUBBLE_CORE_ASSERT(false, "Format not supported!");
 		}
-		else if (channels == 3)
-		{
-			internal_format = GL_RGB8;
-			data_format = GL_RGB;
-		}
-		else if (channels == 4)
-		{
-			internal_format = GL_RGBA8;
-			data_format = GL_RGBA;
-		}
-		
-		mInternalFormat = internal_format;
-		mDataFormat = data_format;
-
-		BUBBLE_CORE_ASSERT(internal_format & data_format, "Format not supported!");
-
-		glcall(glGenTextures(1, &mRendererID));
-		glcall(glBindTexture(GL_TEXTURE_2D, mRendererID));
-		glcall(glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, data_format, GL_UNSIGNED_BYTE, data));
-		
-		glcall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, spec.MinFiler));
-		glcall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, spec.MagFilter));
-
-		glcall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, spec.WrapS));
-		glcall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, spec.WrapT));
-
-		if (spec.WrapS == GL_CLAMP_TO_BORDER || spec.WrapT == GL_CLAMP_TO_BORDER)
-		{
-			glcall(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, (float*)&spec.BorderColor));
-		}
-
-		// Anisotropy filtering
-		GLfloat value;
-		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &value);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, value);
-
-		//glGenerateMipmap(GL_TEXTURE_2D);
+		Invalidate();
+		SetData(data, width * height * channels);
 		stbi_image_free(data);
 	}
 
 	Texture2D::Texture2D(Texture2D&& other) noexcept
-		: mWidth(other.mWidth),
-		  mHeight(other.mHeight),
-		  mDataFormat(other.mDataFormat),
-		  mRendererID(other.mRendererID),
-		  mInternalFormat(other.mInternalFormat)
+		: mRendererID(other.mRendererID),
+		  mSpecification(other.mSpecification)
 	{
-		other.mWidth = 0;
-		other.mHeight = 0;
+		other.mSpecification.Width = 0;
+		other.mSpecification.Height = 0;
 		other.mRendererID = 0;
 	}
 
@@ -128,14 +78,12 @@ namespace Bubble
 		if (this != &other)
 		{
 			glDeleteTextures(1, &mRendererID);
-			mWidth = other.mWidth;
-			mHeight = other.mHeight;
-			mDataFormat = other.mDataFormat;
 			mRendererID = other.mRendererID;
-			mInternalFormat = other.mInternalFormat;
-			other.mWidth = 0;
-			other.mHeight = 0;
+			mSpecification = other.mSpecification;
+
 			other.mRendererID = 0;
+			other.mSpecification.Width = 0;
+			other.mSpecification.Height = 0;
 		}
 		return *this;
 	}
@@ -148,18 +96,23 @@ namespace Bubble
 	void Texture2D::SetData(void* data, uint32_t size)
 	{
 		uint32_t bpp = 0;
-		if (mDataFormat == GL_RGBA) {
-			bpp = 4;
+		switch (mSpecification.DataFormat)
+		{
+			case GL_RGBA:
+				bpp = 4;
+				break;
+			case GL_RGB:
+				bpp = 3;
+				break;
+			case GL_RED:
+				bpp = 1;
+				break;
+			default:
+				BUBBLE_CORE_ASSERT(false, "Format not supported!");
 		}
-		else if (mDataFormat == GL_RGB) {
-			bpp = 3;
-		}
-		else if (mDataFormat == GL_RED) {
-			bpp = 1;
-		}
-
-		BUBBLE_CORE_ASSERT(size == mWidth * mHeight * bpp, "Data must be entire texture!");
-		glTexSubImage2D(mRendererID, 0, 0, 0, mWidth, mHeight, mDataFormat, GL_UNSIGNED_BYTE, data);
+		BUBBLE_CORE_ASSERT(size == mSpecification.Width * mSpecification.Height * bpp, "Data must be entire texture!");
+		glTextureSubImage2D(mRendererID, 0, 0, 0, 
+			mSpecification.Width, mSpecification.Height, mSpecification.DataFormat, mSpecification.ChanelFormat, data);
 	}
 
 	void Texture2D::Bind(uint32_t slot) const
@@ -168,43 +121,79 @@ namespace Bubble
 		glBindTexture(GL_TEXTURE_2D, mRendererID);
 	}
 
-	std::tuple<uint8_t*, Texture2DSpecification>
-		Texture2D::OpenRawImage(const std::string& path)
+	std::tuple<Scope<uint8_t>, Texture2DSpecification>
+		Texture2D::OpenRawImage(const std::string& path, Texture2DSpecification spec)
 	{
-		//stbi_set_flip_vertically_on_load(spec.Flip);
-		Texture2DSpecification spec;
-
-		int width, height, channels;
 		uint8_t* data = nullptr;
+		int width, height, channels;
 
+		stbi_set_flip_vertically_on_load(spec.Flip);
 		data = stbi_load(path.c_str(), &width, &height, &channels, 0);
 		
-		if (data == nullptr) {
+		if (data == nullptr)
 			throw std::runtime_error("Failed to load image!\nPath: " + path);
-		}
+		
 		spec.Width = width;
 		spec.Height = height;
 
-		if (channels == 1)
+		switch (channels)
 		{
-			spec.InternalFormat = GL_R8;
-			spec.DataFormat = GL_RED;
+			case 1:
+				spec.InternalFormat = GL_R8;
+				spec.DataFormat = GL_RED;
+				break;
+			case 3:
+				spec.InternalFormat = GL_RGB8;
+				spec.DataFormat = GL_RGB;
+				break;
+			case 4:
+				spec.InternalFormat = GL_RGBA8;
+				spec.DataFormat = GL_RGBA;
+				break;
+			default:
+				BUBBLE_CORE_ASSERT(false, "Format not supported!");
 		}
-		else if (channels == 3)
+		return { Scope<uint8_t>(data), spec };
+	}
+
+	void Texture2D::Resize(const glm::ivec2& new_size)
+	{
+		mSpecification.Width = new_size.x;
+		mSpecification.Height = new_size.y;
+		Invalidate();
+	}
+
+	void Texture2D::Invalidate()
+	{
+		glDeleteTextures(1, &mRendererID);
+
+		glcall(glGenTextures(1, &mRendererID));
+		glcall(glBindTexture(GL_TEXTURE_2D, mRendererID));
+		glcall(glTexImage2D(GL_TEXTURE_2D, 0, mSpecification.InternalFormat,
+			mSpecification.Width, mSpecification.Height, 0, mSpecification.DataFormat, mSpecification.ChanelFormat, nullptr));
+
+		glcall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mSpecification.MinFiler));
+		glcall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mSpecification.MagFilter));
+
+		glcall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mSpecification.WrapS));
+		glcall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mSpecification.WrapT));
+
+		if (mSpecification.WrapS == GL_CLAMP_TO_BORDER || mSpecification.WrapT == GL_CLAMP_TO_BORDER)
 		{
-			spec.InternalFormat = GL_RGB8;
-			spec.DataFormat = GL_RGB;
+			glcall(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, (float*)&mSpecification.BorderColor));
 		}
-		else if (channels == 4)
+
+		if (mSpecification.AnisotropicFiltering)
 		{
-			spec.InternalFormat = GL_RGBA8;
-			spec.DataFormat = GL_RGBA;
+			GLfloat value;
+			glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &value);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, value);
 		}
-		else {
-			BUBBLE_CORE_ASSERT(spec.InternalFormat & spec.DataFormat, "Format not supported!");
+
+		if (mSpecification.MinMap && !mSpecification.AnisotropicFiltering)
+		{
+			glGenerateMipmap(GL_TEXTURE_2D);
 		}
-		
-		return { data, spec };
 	}
 
 }

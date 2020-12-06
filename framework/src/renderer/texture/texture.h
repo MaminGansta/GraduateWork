@@ -2,7 +2,7 @@
 
 #include "renderer_base.h"
 #include "texture/texture.h"
-#include "glm/vec4.hpp"
+#include "glm/glm.hpp"
 
 
 namespace Bubble
@@ -11,24 +11,23 @@ namespace Bubble
 	{
 		uint32_t Width = 0;
 		uint32_t Height = 0;
-		uint32_t InternalFormat = GL_RGBA8;
-		uint32_t DataFormat = GL_RGBA;
-		uint32_t MinFiler = GL_LINEAR;
-		uint32_t MagFilter = GL_LINEAR;
-		uint32_t WrapS = GL_REPEAT;
-		uint32_t WrapT = GL_REPEAT;
-		glm::vec4 BorderColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-
+		uint32_t ChanelFormat = GL_UNSIGNED_BYTE; // GL_UNSIGNED_BYTE, GL_FLOAT
+		uint32_t InternalFormat = GL_RGBA8;     // GL_RED8, GL_RGB8, GL_RGBA8, GL_DEPTH_COMPONENT
+		uint32_t DataFormat = GL_RGBA;          // GL_RED, GL_RGB, GL_RGBA , GL_DEPTH_COMPONENT
+		uint32_t MinFiler = GL_LINEAR;          // GL_LINEAR, GL_NEAREST
+		uint32_t MagFilter = GL_LINEAR;         // GL_LINEAR, GL_NEAREST
+		uint32_t WrapS = GL_REPEAT;				// GL_REPEAT, GL_CLAMP, GL_CLAMP_TO_BORDER
+		uint32_t WrapT = GL_REPEAT;				// GL_REPEAT, GL_CLAMP, GL_CLAMP_TO_BORDER
+		glm::vec4 BorderColor = glm::vec4(1.0f);
 		bool Flip = false;
-		bool MinMap = true;
+		bool MinMap = false;
+		bool AnisotropicFiltering = false;
 	};
 
 	struct Texture2D
 	{
-		uint32_t mWidth = 0;
-		uint32_t mHeight = 0;
 		uint32_t mRendererID = 0;
-		uint32_t mInternalFormat = 0, mDataFormat = 0;
+		Texture2DSpecification mSpecification;
 
 	public:
 		Texture2D() = default;
@@ -45,18 +44,21 @@ namespace Bubble
 
 		~Texture2D();
 
-		uint32_t GetWidth() const { return mWidth; }
-		uint32_t GetHeight() const { return mHeight; }
+		uint32_t GetWidth() const { return mSpecification.Width; }
+		uint32_t GetHeight() const { return mSpecification.Height; }
 		uint32_t GetRendererID() const  { return mRendererID; }
 
+		// Size in bytes
 		void SetData(void* data, uint32_t size);
 
 		void Bind(uint32_t slot = 0) const;
 		static void UnbindAll() { glActiveTexture(GL_TEXTURE0); }
 
-		bool operator==(const Texture2D& other) const {return mRendererID == other.mRendererID;}
+		void Resize(const glm::ivec2& new_size);
+		void Invalidate();
 
-		// Don't forget to remove char*
-		static std::tuple<uint8_t*, Texture2DSpecification> OpenRawImage(const std::string& path);
+		bool operator==(const Texture2D& other) const { return mRendererID == other.mRendererID; }
+		static std::tuple<Scope<uint8_t>, Texture2DSpecification> 
+			OpenRawImage(const std::string& path, Texture2DSpecification spec = {});
 	};
 }
