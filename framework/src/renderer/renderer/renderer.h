@@ -15,13 +15,15 @@
 namespace Bubble
 {
 	enum class DrawType { POINTS, LINES, TRIANGLES };
+	enum class RenderingMod { ImageProccessing, Graphic3D, Graphic2D };
 
 	struct Renderer
 	{
 		static const Framebuffer* sActiveViewport;
+		static RenderingMod sActiveMod;
 
 	public:
-		static void Init();
+		static void Init(RenderingMod start_mode);
 
 		// ============ Options ============
 		static void Wareframe(bool);

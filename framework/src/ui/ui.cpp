@@ -45,16 +45,19 @@ namespace Bubble
 		sDrawMenuBar ? sDrawMenuBar() : NULL;
 		mImGuiControll.EndMenuBar();
 
-		for (auto& module : sModules)
+		for (int i = 0; i < sModules.size(); i++)
 		{
-			if (module->IsOpen())
+			auto& module = sModules[i];
+			if (!module->IsOpen())
 			{
-				module->Draw(dt);
-			}
-			else {
 				auto iterator = std::find(sModules.begin(), sModules.end(), module);
 				sModules.erase(iterator);
 			}
+		}
+
+		for (auto& module : sModules)
+		{
+			module->Draw(dt);
 		}
 
 		mImGuiControll.End();

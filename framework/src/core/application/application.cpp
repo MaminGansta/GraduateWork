@@ -15,7 +15,7 @@ namespace Bubble
 
 	void Application::Run()
 	{
-		Renderer::Init();
+		Renderer::Init(RenderingMod::ImageProccessing);
 		Bubble::Log::init();
 		Bubble::Input::SetWindow(sWindow.get());
 		OnCreate();

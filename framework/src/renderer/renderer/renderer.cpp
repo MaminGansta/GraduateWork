@@ -5,7 +5,7 @@
 namespace Bubble
 {
 	const Framebuffer* Renderer::sActiveViewport;
-
+	Bubble::RenderingMod Renderer::sActiveMod;
 
 	static uint32_t OpenGLDrawType(DrawType draw_type)
 	{
@@ -28,10 +28,22 @@ namespace Bubble
 	}
 
 
-	void Renderer::Init()
+	void Renderer::Init(RenderingMod start_mode)
 	{
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_CULL_FACE);
+		sActiveMod = start_mode;
+		switch (start_mode)
+		{
+			case Bubble::RenderingMod::Graphic3D:
+				glEnable(GL_DEPTH_TEST);
+				glEnable(GL_CULL_FACE);
+				break;
+			case Bubble::RenderingMod::Graphic2D:
+			case Bubble::RenderingMod::ImageProccessing:
+				// Nothing to set
+				break;
+			default:
+				BUBBLE_CORE_ASSERT(false, "Mod not supported");
+		}
 	}
 
 
@@ -49,7 +61,8 @@ namespace Bubble
 
 	void Renderer::AlphaBlending(bool on, uint32_t sfactor, uint32_t dfactor)
 	{
-		if (on) {
+		if (on)
+		{
 			glEnable(GL_BLEND);
 			glBlendFunc(sfactor, dfactor);
 		}
@@ -77,7 +90,7 @@ namespace Bubble
 		glm::ivec2 RenderPos;
 		glm::ivec2 RenderSize;
 
-		if (width * height)
+		if (width > 0 && height > 0)
 		{
 			RenderPos = { x, y };
 			RenderSize = { width, height };

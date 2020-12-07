@@ -80,7 +80,6 @@ namespace Bubble
 			glDeleteTextures(1, &mRendererID);
 			mRendererID = other.mRendererID;
 			mSpecification = other.mSpecification;
-
 			other.mRendererID = 0;
 			other.mSpecification.Width = 0;
 			other.mSpecification.Height = 0;
@@ -111,7 +110,7 @@ namespace Bubble
 				BUBBLE_CORE_ASSERT(false, "Format not supported!");
 		}
 		BUBBLE_CORE_ASSERT(size == mSpecification.Width * mSpecification.Height * bpp, "Data must be entire texture!");
-		glTextureSubImage2D(mRendererID, 0, 0, 0, 
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
 			mSpecification.Width, mSpecification.Height, mSpecification.DataFormat, mSpecification.ChanelFormat, data);
 	}
 

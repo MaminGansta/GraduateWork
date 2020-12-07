@@ -1,5 +1,7 @@
 
 #include "framebuffer.h"
+#include "renderer/renderer.h"
+
 
 namespace Bubble
 {
@@ -21,6 +23,7 @@ namespace Bubble
 		: mColorAttachment(std::move(color)),
 		  mDepthAttachment(std::move(depth))
 	{
+		mSpecification = { color.GetWidth(), color.GetHeight() };
 		Invalidate();
 	}
 
@@ -30,7 +33,6 @@ namespace Bubble
 		mColorAttachment = std::move(other.mColorAttachment);
 		mDepthAttachment = std::move(other.mDepthAttachment);
 		mSpecification = other.mSpecification;
-		
 		other.mRendererID = 0;
 	}
 
@@ -44,7 +46,6 @@ namespace Bubble
 			mColorAttachment = std::move(other.mColorAttachment);
 			mDepthAttachment = std::move(other.mDepthAttachment);
 			mSpecification = other.mSpecification;
-
 			other.mRendererID = 0;
 		}
 		return *this;
@@ -89,14 +90,15 @@ namespace Bubble
 		glcall(glGenFramebuffers(1, &mRendererID));
 		glcall(glBindFramebuffer(GL_FRAMEBUFFER, mRendererID));
 
-		if (mColorAttachment.GetWidth() != mSpecification.Width &&
+		if (mColorAttachment.GetWidth() != mSpecification.Width ||
 			mColorAttachment.GetHeight() != mSpecification.Height)
 		{
 			mColorAttachment.Resize({ mSpecification.Width, mSpecification.Height });
 		}
 
-		if (mDepthAttachment.GetWidth() != mSpecification.Width &&
-			mDepthAttachment.GetHeight() != mSpecification.Height)
+		if (Renderer::sActiveMod == RenderingMod::Graphic3D &&
+			(mDepthAttachment.GetWidth() != mSpecification.Width ||
+			mDepthAttachment.GetHeight() != mSpecification.Height))
 		{
 			mDepthAttachment.Resize({ mSpecification.Width, mSpecification.Height });
 		}
