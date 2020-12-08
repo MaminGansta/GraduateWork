@@ -2,7 +2,6 @@
 
 #include "vec.h"
 
-
 namespace gm
 {
 	template <typename T>
@@ -14,6 +13,11 @@ namespace gm
 			memmove(mData.data(), data, sizeof(T) * size);
 		}
 	}
+
+	template <typename T>
+	gm::Vec<T>::Vec(std::initializer_list<T> values)
+		: mData(values)
+	{}
 
 	template <typename T>
 	T& Vec<T>::operator[](int idx)
@@ -28,5 +32,4 @@ namespace gm
 		assert(*(uint32_t*)&idx < GetSize(), "Out of bound access");
 		return mData[idx];
 	}
-
 }

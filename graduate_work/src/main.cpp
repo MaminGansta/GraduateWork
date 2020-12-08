@@ -1,8 +1,11 @@
 
 #include "bubble.h"
+#include "bubble_entry_point.h"
 
-#include "ui/main_window.h"
-#include "UI/image_window.h"
+#include "kernel.h"
+#include "main_window.h"
+#include "image_window.h"
+
 
 void blur_func(Framebuffer& framebuffer, Framebuffer& buffer, Shader& gauss, const Ref<VertexArray>& FullScreenQuadVAO);
 
@@ -24,19 +27,16 @@ struct MyApplication : Application
 		spec.WrapT = GL_MIRRORED_REPEAT;
 
 		Texture2D image("resources/images/nature.jpg", spec);
-		Texture2D image2(image.GetWidth(), image.GetHeight());
+		Framebuffer fb(image.GetWidth(), image.GetHeight());
 
-		Framebuffer res(std::move(image));
-		Framebuffer fb(std::move(image2));
-		
-		blur_func(res, fb, *shader, Renderer::sFullScreenVAO);
+		Kernel kernel = { {0.1f, 0.1f, 0.1f }, { 0.1f, 0.1f, 0.1f }, { 0.1f, 0.1f, 0.1f } };
+		kernel.Bind();
 
-		auto image3 = res.GetColorAttachment();
-		auto image_copy = Renderer::CopyTexture2D(image3);
+		fb.Bind();
+		shader->SetTexture2D("uImage", image);
+		Renderer::DrawIndices(Renderer::sFullScreenVAO);
 
-		UI::AddModule<ImageWindow>(std::move(image3));
-		UI::AddModule<ImageWindow>(std::move(image_copy));
-		UI::AddModule<ImageWindow>(fb.GetColorAttachment());
+		UI::AddModule<ImageWindow>(std::move(fb.GetColorAttachment()));
 
 		// OpenCL temp
 		//std::vector<cl::Platform> platforms;
@@ -68,7 +68,5 @@ Application* CreateApplication()
 
 void blur_func(Framebuffer& framebuffer, Framebuffer& buffer, Shader& gauss, const Ref<VertexArray>& FullScreenQuadVAO)
 {
-	buffer.Bind();
-	gauss.SetTexture2D("uImage", framebuffer.GetColorAttachmentRendererID());
-	Renderer::DrawIndices(FullScreenQuadVAO);
+	
 }

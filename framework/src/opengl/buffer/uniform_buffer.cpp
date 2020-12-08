@@ -16,7 +16,18 @@ namespace Bubble
 
 		glGenBuffers(1, &mRendererID);
 		glBindBuffer(GL_UNIFORM_BUFFER, mRendererID);
-		glBufferData(GL_UNIFORM_BUFFER, mBufferSize, NULL, GL_STATIC_DRAW);
+		glBufferData(GL_UNIFORM_BUFFER, mBufferSize, NULL, GL_DYNAMIC_DRAW);
+
+		glBindBufferRange(GL_UNIFORM_BUFFER, index, mRendererID, 0, mBufferSize);
+	}
+
+	UniformBuffer::UniformBuffer(int index, uint32_t buffer_size)
+		:mIndex(index),
+		 mBufferSize(buffer_size)
+	{
+		glGenBuffers(1, &mRendererID);
+		glBindBuffer(GL_UNIFORM_BUFFER, mRendererID);
+		glBufferData(GL_UNIFORM_BUFFER, mBufferSize, NULL, GL_DYNAMIC_DRAW);
 
 		glBindBufferRange(GL_UNIFORM_BUFFER, index, mRendererID, 0, mBufferSize);
 	}
@@ -58,7 +69,7 @@ namespace Bubble
 	void UniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
 	{
 		glBindBuffer(GL_UNIFORM_BUFFER, mRendererID);
-		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
+		glcall(glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data));
 	}
 
 	UniformArrayElemnt UniformBuffer::operator[](int index)

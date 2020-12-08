@@ -4,8 +4,9 @@ project(GraduateWork VERSION 0.0.0)
 
 file(GLOB_RECURSE SRCS *.cpp)
 file(GLOB_RECURSE HDRS *.h)
+file(GLOB_RECURSE TSRCS *.inl)
 
-add_executable(GraduateWork ${SRCS} ${HDRS})
+add_executable(GraduateWork ${SRCS} ${HDRS} ${TSRCS})
 
 
 set_target_properties(
@@ -20,9 +21,10 @@ add_dll(GraduateWork)
 
 target_include_directories(
     GraduateWork PUBLIC
-    ${PROJECT_SOURCE_DIR}
-    ${PROJECT_SOURCE_DIR}/ui
-    ${PROJECT_SOURCE_DIR}/math
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ui
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/math
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/convolution
 )
 
 # Resources

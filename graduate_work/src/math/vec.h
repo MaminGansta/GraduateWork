@@ -21,7 +21,8 @@ namespace gm
 	public:
 		Vec() = default;
 		Vec(int size, const_pointer data = nullptr);
-		
+		Vec(std::initializer_list<T> values);
+
 		reference operator[] (int idx);
 		const_reference operator[](int idx) const;
 		uint32_t GetSize() const { return mData.size(); }

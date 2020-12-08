@@ -2,15 +2,34 @@
 
 #include "mat.h"
 
-
 namespace gm
 {
 	template <typename T>
 	Mat<T>::Mat(int width, int height, T* data)
 		: mWidth(width),
-		  mHeight(height),
-		  mData(width* height)
+		mHeight(height),
+		mData(width* height)
 	{}
+
+
+	template <typename T>
+	gm::Mat<T>::Mat(std::initializer_list<Vec<T>> rows)
+	{
+		mHeight = rows.size();
+		mWidth = rows.begin()->GetSize();
+		mData.resize(mWidth * mHeight);
+
+		for (int i = 0; i < mHeight; i++)
+		{
+			for (int j = 0; j < mWidth; j++)
+			{
+				const Vec<T>& vec = *(rows.begin() + i);
+				assert(vec.GetSize() == mWidth);
+				mData[i * mWidth + j] = vec[j];
+			}
+		}
+	}
+
 
 	template <typename T>
 	T* Mat<T>::operator[](int idx)
@@ -49,8 +68,8 @@ namespace gm
 	void gm::Mat<T>::SetRow(int idx, const Vec<T>& row)
 	{
 		assert(*(uint32_t*)&idx < GetRowsNum(), "Out of bound access");
-		assert(row.GetSize() == GetRowsNum(), "Out ogf bound access");
-	
+		assert(row.GetSize() == GetRowsNum(), "Out of bound access");
+
 		memmove(mData.data() + GetColsNum() * idx, row.GetData(), sizeof(T) * row.GetSize());
 	}
 
@@ -79,5 +98,4 @@ namespace gm
 		}
 		return mat;
 	}
-
 }

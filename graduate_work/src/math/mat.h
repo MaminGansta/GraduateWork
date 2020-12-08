@@ -21,6 +21,7 @@ namespace gm
 	public:
 		Mat() = default;
 		Mat(int width, int height, T* data = nullptr);
+		Mat(std::initializer_list<Vec<T>> rows);
 		
 		pointer operator[] (int idx);
 		const_pointer operator[] (int idx) const;
