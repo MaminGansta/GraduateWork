@@ -25,10 +25,11 @@ add_definitions(-D"STB_IMAGE_IMPLEMENTATION")
 target_include_directories(
     Framework PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/ui
     ${CMAKE_CURRENT_SOURCE_DIR}/core
+    ${CMAKE_CURRENT_SOURCE_DIR}/core/ui
+    ${CMAKE_CURRENT_SOURCE_DIR}/opengl
+    ${CMAKE_CURRENT_SOURCE_DIR}/opencl
     ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/renderer
     ${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/imgui
     ${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/stb_image
     ${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/SDL2/include
@@ -36,6 +37,7 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/spdlog/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/glm/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/opencl3/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/thread_pool/include
 )
 
 # Libraries directories

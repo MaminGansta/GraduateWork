@@ -10,6 +10,10 @@ struct ImageWindow : Module
 		: mImage(image)
 	{}
 
+	ImageWindow(Texture2D&& image)
+		: mImage(CreateRef<Texture2D>(std::move(image)))
+	{}
+
 	void Draw(DeltaTime dt)
 	{
 		std::string name = "Image" + std::to_string(mImage->mRendererID);

@@ -18,6 +18,13 @@ set_target_properties(
 target_link_libraries(GraduateWork Framework)
 add_dll(GraduateWork)
 
+target_include_directories(
+    GraduateWork PUBLIC
+    ${PROJECT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/ui
+    ${PROJECT_SOURCE_DIR}/math
+)
+
 # Resources
 add_custom_command(TARGET GraduateWork PRE_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory

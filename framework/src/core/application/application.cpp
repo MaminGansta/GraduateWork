@@ -9,8 +9,7 @@ namespace Bubble
 	Application::Application(const std::string& name)
     {
         sWindow = CreateScope<Window>(name);
-		mUI = CreateScope<UI>(sWindow.get());
-		OnCreate();
+		mUI = CreateScope<UI>(sWindow.get()); 
     }
 
 	void Application::Run()
@@ -28,9 +27,11 @@ namespace Bubble
 				OnEvent(event);
 				sWindow->OnEvent(event);
 				Input::OnEvent(event);
+				mUI->mImGuiControll.OnEvent(event);
 			}
 			OnUpdate(mTimer.GetDeltaTime());
 			mUI->OnUpdate(mTimer.GetDeltaTime());
+
 			sWindow->OnUpdate();
 			mTimer.Update();
 		}

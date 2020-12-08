@@ -13,7 +13,7 @@ namespace Bubble
 		Timer mTimer;
 
 		Application(const std::string& name = "Window");
-		void Run();
+		virtual void Run();
 		virtual void OnCreate() {};
 		virtual void OnUpdate(DeltaTime) {};
 		virtual void OnEvent(const SDL_Event& event) {};
