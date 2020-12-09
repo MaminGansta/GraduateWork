@@ -20,7 +20,7 @@ in vec2 vTexCoords;
 uniform sampler2D uImage;
 
 #define BUFFER_SIZE 30
-layout (std140, binding = 2) uniform ConvolutionKenel
+layout (std140, binding = 0) uniform ConvolutionKenel
 {
     uniform int uWidth;
     uniform int uHeight;

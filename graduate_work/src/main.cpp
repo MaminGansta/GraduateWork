@@ -7,8 +7,6 @@
 #include "image_window.h"
 
 
-void blur_func(Framebuffer& framebuffer, Framebuffer& buffer, Shader& gauss, const Ref<VertexArray>& FullScreenQuadVAO);
-
 struct MyApplication : Application
 {
 	MyApplication()
@@ -17,26 +15,14 @@ struct MyApplication : Application
 
 	void OnCreate()
 	{
-		UI::AddModule(CreateScope<TestWindow>());
+		Texture2D image("resources/images/nature.jpg");
 
-		//Ref<Shader> shader = ShaderLoader::Load("resources/shaders/convolution.glsl");
-		Ref<Shader> shader = ShaderLoader::Load("C:/Users/lol/Desktop/GraduateWork/graduate_work/resources/shaders/convolution.glsl");
+		Kernel kernel = { { 0.1f, 0.1f, 0.1f },
+						  { 0.1f, 0.1f, 0.1f },
+						  { 0.1f, 0.1f, 0.1f } };
 
-		Texture2DSpecification spec;
-		spec.WrapS = GL_MIRRORED_REPEAT;
-		spec.WrapT = GL_MIRRORED_REPEAT;
-
-		Texture2D image("resources/images/nature.jpg", spec);
-		Framebuffer fb(image.GetWidth(), image.GetHeight());
-
-		Kernel kernel = { {0.1f, 0.1f, 0.1f }, { 0.1f, 0.1f, 0.1f }, { 0.1f, 0.1f, 0.1f } };
-		kernel.Bind();
-
-		fb.Bind();
-		shader->SetTexture2D("uImage", image);
-		Renderer::DrawIndices(Renderer::sFullScreenVAO);
-
-		UI::AddModule<ImageWindow>(std::move(fb.GetColorAttachment()));
+		Texture2D res = kernel.Apply(image);
+		UI::AddModule<ImageWindow>(std::move(res));
 
 		// OpenCL temp
 		//std::vector<cl::Platform> platforms;
@@ -63,10 +49,4 @@ struct MyApplication : Application
 Application* CreateApplication()
 {
 	return new MyApplication;
-}
-
-
-void blur_func(Framebuffer& framebuffer, Framebuffer& buffer, Shader& gauss, const Ref<VertexArray>& FullScreenQuadVAO)
-{
-	
 }

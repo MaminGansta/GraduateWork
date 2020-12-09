@@ -147,6 +147,17 @@ namespace Bubble
 		Invalidate();
 	}
 
+	void Framebuffer::Resize(uint32_t width, uint32_t height)
+	{
+		if (width < 0 || height < 0) {
+			LOG_CORE_ERROR("Invalid framebuffer resize params width: {} height: {}", width, height);
+			return;
+		}
+		mSpecification.Width = width;
+		mSpecification.Height = height;
+		Invalidate();
+	}
+
 	const FramebufferSpecification& Framebuffer::GetSpecification() const
 	{
 		return mSpecification;
