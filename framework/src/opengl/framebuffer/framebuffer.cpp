@@ -41,7 +41,6 @@ namespace Bubble
 		if (this != &other)
 		{
 			glDeleteFramebuffers(1, &mRendererID);
-			
 			mRendererID = other.mRendererID;
 			mColorAttachment = std::move(other.mColorAttachment);
 			mDepthAttachment = std::move(other.mDepthAttachment);
@@ -138,7 +137,8 @@ namespace Bubble
 
 	void Framebuffer::Resize(glm::ivec2 size)
 	{
-		if (size.x < 0 || size.y < 0) {
+		if (size.x < 0 || size.y < 0)
+		{
 			LOG_CORE_ERROR("Invalid framebuffer resize params width: {} height: {}", size.x, size.y);
 			return;
 		}
@@ -149,7 +149,8 @@ namespace Bubble
 
 	void Framebuffer::Resize(uint32_t width, uint32_t height)
 	{
-		if (width < 0 || height < 0) {
+		if (width < 0 || height < 0)
+		{
 			LOG_CORE_ERROR("Invalid framebuffer resize params width: {} height: {}", width, height);
 			return;
 		}
@@ -176,9 +177,6 @@ namespace Bubble
 
 	void Framebuffer::SetDefaultAttachemtSpec()
 	{
-		// Color attachment uses default preset
-
-		// Depth attachment
 		mDepthAttachment.mSpecification.ChanelFormat = GL_FLOAT;
 		mDepthAttachment.mSpecification.DataFormat = GL_DEPTH_COMPONENT;
 		mDepthAttachment.mSpecification.InternalFormat = GL_DEPTH_COMPONENT;

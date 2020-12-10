@@ -6,3 +6,4 @@
 #include "opencl/opencl.h"
 
 using namespace Bubble;
+using Image = Texture2D;

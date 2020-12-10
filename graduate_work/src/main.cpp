@@ -1,10 +1,25 @@
 
-#include "bubble.h"
 #include "bubble_entry_point.h"
 
 #include "kernel.h"
+#include "box_filter.h"
+#include "gauss_filter.h"
+#include "sharpness_filter.h"
+
 #include "main_window.h"
 #include "image_window.h"
+
+void print_kernel(const Kernel& kernel)
+{
+	for (int i = 0; i < kernel.GetHeight(); i++)
+	{
+		for (int j = 0; j < kernel.GetWidth(); j++)
+		{
+			printf("%0.3f ", kernel[i][j]);
+		}
+		printf("\n");
+	}
+}
 
 
 struct MyApplication : Application
@@ -15,13 +30,12 @@ struct MyApplication : Application
 
 	void OnCreate()
 	{
-		Texture2D image("resources/images/nature.jpg");
+		Image image("resources/images/nature.jpg");
+		UI::AddModule<ImageWindow>(Renderer::CopyTexture2D(image));
 
-		Kernel kernel = { { 0.1f, 0.1f, 0.1f },
-						  { 0.1f, 0.1f, 0.1f },
-						  { 0.1f, 0.1f, 0.1f } };
+		Kernel kernel = CreateSharpnessFilter(3);
 
-		Texture2D res = kernel.Apply(image);
+		Image res = kernel.Apply(image);
 		UI::AddModule<ImageWindow>(std::move(res));
 
 		// OpenCL temp
@@ -34,7 +48,7 @@ struct MyApplication : Application
 		//cl::string name = devices[0].getInfo<CL_DEVICE_VENDOR>();
 	}
 
-	void OnUpdate(Bubble::DeltaTime dt)
+	void OnUpdate(DeltaTime dt)
 	{
 
 	}

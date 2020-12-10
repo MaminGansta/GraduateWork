@@ -8,7 +8,13 @@ Kernel::Kernel(std::initializer_list<gm::Vec<float>> values)
 	: mKernel{ std::move(values) }
 {}
 
-void Kernel::Bind()
+Kernel::Kernel(int size)
+	: mKernel(size, size)
+{
+	BUBBLE_CORE_ASSERT(size % 2, "Invalid kernel size, it must be odd");
+}
+
+void Kernel::Bind() const
 {
 	if (!sKernelUBO)
 	{
@@ -19,7 +25,7 @@ void Kernel::Bind()
 	sKernelUBO->SetData(size, sizeof(int) * 2);
 }
 
-Texture2D Kernel::Apply(const Texture2D& image, Framebuffer&& fb)
+Texture2D Kernel::Apply(const Texture2D& image, Framebuffer&& fb) const
 {
 	if (image.GetWidth() != fb.GetWidth() || image.GetHeight() != fb.GetHeight())
 	{

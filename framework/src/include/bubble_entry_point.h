@@ -1,5 +1,6 @@
 #pragma once
 
+#include "bubble.h"
 #include "application/application.h"
 
 
