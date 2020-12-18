@@ -9,18 +9,6 @@
 #include "main_window.h"
 #include "image_window.h"
 
-void print_kernel(const Kernel& kernel)
-{
-	for (int i = 0; i < kernel.GetHeight(); i++)
-	{
-		for (int j = 0; j < kernel.GetWidth(); j++)
-		{
-			printf("%0.3f ", kernel[i][j]);
-		}
-		printf("\n");
-	}
-}
-
 
 struct MyApplication : Application
 {
@@ -30,13 +18,21 @@ struct MyApplication : Application
 
 	void OnCreate()
 	{
+		//Texture2D image("resources/images/nature.jpg");
+
 		Image image("resources/images/nature.jpg");
-		UI::AddModule<ImageWindow>(Renderer::CopyTexture2D(image));
 
-		Kernel kernel = CreateSharpnessFilter(3);
+		//UI::AddModule<ImageWindow>(Renderer::CopyTexture2D(image));
+		//
+		Kernel kernel = CreateSharpnessFilter(3, 40);
+		//
+		//Texture2D res = kernel.ApplyGPU(image);
+		//UI::AddModule<ImageWindow>(std::move(res));
 
-		Image res = kernel.Apply(image);
-		UI::AddModule<ImageWindow>(std::move(res));
+		image = kernel.Apply(image);
+
+		UI::AddModule<ImageWindow>(image.LoadOnGPU());
+
 
 		// OpenCL temp
 		//std::vector<cl::Platform> platforms;
@@ -46,16 +42,6 @@ struct MyApplication : Application
 		//platforms[0].getDevices(CL_DEVICE_TYPE_GPU, &devices);
 		//
 		//cl::string name = devices[0].getInfo<CL_DEVICE_VENDOR>();
-	}
-
-	void OnUpdate(DeltaTime dt)
-	{
-
-	}
-
-	void OnEvent(const SDL_Event& event)
-	{
-
 	}
 
 };

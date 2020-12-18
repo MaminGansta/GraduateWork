@@ -19,7 +19,6 @@ namespace Bubble
 		Invalidate();
 	}
 
-
 	Texture2D::Texture2D(const Texture2DSpecification& spec)
 		: mSpecification(spec)
 	{
@@ -46,24 +45,8 @@ namespace Bubble
 
 		mSpecification.Width = width;
 		mSpecification.Height = height;
+		SetTextureSpecChanels(mSpecification, channels);
 
-		switch (channels)
-		{
-			case 1:
-				mSpecification.InternalFormat = GL_R8;
-				mSpecification.DataFormat = GL_RED;
-				break;
-			case 3:
-				mSpecification.InternalFormat = GL_RGB8;
-				mSpecification.DataFormat = GL_RGB;
-				break;
-			case 4:
-				mSpecification.InternalFormat = GL_RGBA8;
-				mSpecification.DataFormat = GL_RGBA;
-				break;
-			default:
-				BUBBLE_CORE_ASSERT(false, "Format not supported!");
-		}
 		Invalidate();
 		SetData(data, width * height * channels);
 		stbi_image_free(data);
@@ -99,22 +82,8 @@ namespace Bubble
 
 	void Texture2D::SetData(void* data, uint32_t size)
 	{
-		uint32_t bpp = 0;
-		switch (mSpecification.DataFormat)
-		{
-			case GL_RGBA:
-				bpp = 4;
-				break;
-			case GL_RGB:
-				bpp = 3;
-				break;
-			case GL_RED:
-				bpp = 1;
-				break;
-			default:
-				BUBBLE_CORE_ASSERT(false, "Format not supported!");
-		}
-		BUBBLE_CORE_ASSERT(size == mSpecification.Width * mSpecification.Height * bpp, "Data must be entire texture!");
+		uint32_t channels = ExtractTextureSpecChannels(mSpecification);
+		BUBBLE_CORE_ASSERT(size == mSpecification.Width * mSpecification.Height * channels, "Data must be entire texture!");
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
 			mSpecification.Width, mSpecification.Height, mSpecification.DataFormat, mSpecification.ChanelFormat, data);
 	}
@@ -139,24 +108,8 @@ namespace Bubble
 		
 		spec.Width = width;
 		spec.Height = height;
-
-		switch (channels)
-		{
-			case 1:
-				spec.InternalFormat = GL_R8;
-				spec.DataFormat = GL_RED;
-				break;
-			case 3:
-				spec.InternalFormat = GL_RGB8;
-				spec.DataFormat = GL_RGB;
-				break;
-			case 4:
-				spec.InternalFormat = GL_RGBA8;
-				spec.DataFormat = GL_RGBA;
-				break;
-			default:
-				BUBBLE_CORE_ASSERT(false, "Format not supported!");
-		}
+		SetTextureSpecChanels(spec, channels);
+		
 		return { Scope<uint8_t>(data), spec };
 	}
 
@@ -198,6 +151,48 @@ namespace Bubble
 		{
 			glGenerateMipmap(GL_TEXTURE_2D);
 		}
+	}
+
+
+	void SetTextureSpecChanels(Texture2DSpecification& spec, int channels)
+	{
+		switch (channels)
+		{
+			case 1:
+				spec.InternalFormat = GL_R8;
+				spec.DataFormat = GL_RED;
+				break;
+			case 3:
+				spec.InternalFormat = GL_RGB8;
+				spec.DataFormat = GL_RGB;
+				break;
+			case 4:
+				spec.InternalFormat = GL_RGBA8;
+				spec.DataFormat = GL_RGBA;
+				break;
+			default:
+				BUBBLE_CORE_ASSERT(false, "Format not supported!");
+		}
+	}
+
+	uint32_t ExtractTextureSpecChannels(const Texture2DSpecification& spec)
+	{
+		uint32_t bpp = 0;
+		switch (spec.DataFormat)
+		{
+			case GL_RGBA:
+				bpp = 4;
+				break;
+			case GL_RGB:
+				bpp = 3;
+				break;
+			case GL_RED:
+				bpp = 1;
+				break;
+			default:
+				BUBBLE_CORE_ASSERT(false, "Format not supported!");
+		}
+		return bpp;
 	}
 
 }

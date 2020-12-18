@@ -23,7 +23,6 @@ namespace Bubble
 
 		void OnUpdate(DeltaTime dt);
 
-
 		template <typename T, typename ...Args>
 		static int AddModule(Args&& ...args)
 		{

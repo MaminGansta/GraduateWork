@@ -62,4 +62,8 @@ namespace Bubble
 		static std::tuple<Scope<uint8_t>, Texture2DSpecification> 
 			OpenRawImage(const std::string& path, Texture2DSpecification spec = {});
 	};
+
+
+	void SetTextureSpecChanels(Texture2DSpecification& spec, int channels);
+	uint32_t ExtractTextureSpecChannels(const Texture2DSpecification& spec);
 }
