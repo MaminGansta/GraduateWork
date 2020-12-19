@@ -1,10 +1,11 @@
 
 #include "bubble_entry_point.h"
 
-#include "kernel.h"
 #include "box_filter.h"
 #include "gauss_filter.h"
 #include "sharpness_filter.h"
+#include "conv_calculation/conv_calculation.h"
+
 
 #include "main_window.h"
 #include "image_window.h"
@@ -29,7 +30,7 @@ struct MyApplication : Application
 		//Texture2D res = kernel.ApplyGPU(image);
 		//UI::AddModule<ImageWindow>(std::move(res));
 
-		image = kernel.Apply(image);
+		image = cpu::ApplyKernel(kernel, image);
 
 		UI::AddModule<ImageWindow>(image.LoadOnGPU());
 
