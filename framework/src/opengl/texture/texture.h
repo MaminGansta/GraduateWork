@@ -16,8 +16,8 @@ namespace Bubble
 		uint32_t DataFormat = GL_RGBA;            // GL_RED, GL_RGB, GL_RGBA , GL_DEPTH_COMPONENT
 		uint32_t MinFiler = GL_LINEAR;            // GL_LINEAR, GL_NEAREST
 		uint32_t MagFilter = GL_LINEAR;           // GL_LINEAR, GL_NEAREST
-		uint32_t WrapS = GL_MIRRORED_REPEAT;				  // GL_REPEAT, GL_CLAMP, GL_CLAMP_TO_BORDER, GL_MIRRORED_REPEAT 
-		uint32_t WrapT = GL_MIRRORED_REPEAT;				  // GL_REPEAT, GL_CLAMP, GL_CLAMP_TO_BORDER, GL_MIRRORED_REPEAT 
+		uint32_t WrapS = GL_MIRRORED_REPEAT;	  // GL_REPEAT, GL_CLAMP, GL_CLAMP_TO_BORDER, GL_MIRRORED_REPEAT 
+		uint32_t WrapT = GL_MIRRORED_REPEAT;	  // GL_REPEAT, GL_CLAMP, GL_CLAMP_TO_BORDER, GL_MIRRORED_REPEAT 
 		glm::vec4 BorderColor = glm::vec4(1.0f);
 		bool Flip = false;
 		bool MinMap = false;

@@ -1,6 +1,5 @@
 
 #include "bubble_entry_point.h"
-
 #include "image_processing.h"
 
 #include "main_window.h"
