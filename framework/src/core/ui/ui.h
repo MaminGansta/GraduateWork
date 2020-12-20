@@ -29,7 +29,7 @@ namespace Bubble
 			sModules.push_back(CreateScope<T>(std::forward<Args>(args)...));
 			return sModules.back()->GetID();
 		}
-		static int AddModule(Scope<Module>&& module);
+		static int AddModule(Scope<Module>&& ui_module);
 		static void RemoveModule(int module_id);
 		static void SetMenuBar(std::function<void()>&& draw_menubar);
 	};

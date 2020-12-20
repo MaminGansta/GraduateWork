@@ -22,6 +22,8 @@ namespace Bubble
 		bool Flip = false;
 		bool MinMap = false;
 		bool AnisotropicFiltering = false;
+
+		auto operator<=>(const Texture2DSpecification&) const = default;
 	};
 
 	struct Texture2D

@@ -7,16 +7,16 @@ namespace Bubble
 	std::vector<Scope<Module>> UI::sModules;
 	std::function<void()> UI::sDrawMenuBar;
 
-	int UI::AddModule(Scope<Module>&& module)
+	int UI::AddModule(Scope<Module>&& ui_module)
 	{
-		sModules.push_back(std::move(module));
+		sModules.push_back(std::move(ui_module));
 		return sModules.back()->GetID();
 	}
 
 	void UI::RemoveModule(int module_id)
 	{
 		auto iterator = std::find_if(sModules.begin(), sModules.end(),
-			[module_id](const Scope<Module>& module) { return module->GetID() == module_id; });
+			[module_id](const Scope<Module>& ui_module) { return ui_module->GetID() == module_id; });
 		sModules.erase(iterator);
 	}
 
@@ -42,22 +42,25 @@ namespace Bubble
 		mImGuiControll.Begin();
 
 		mImGuiControll.BeginMenuBar();
-		sDrawMenuBar ? sDrawMenuBar() : NULL;
+		if (sDrawMenuBar)
+		{
+			sDrawMenuBar();
+		}
 		mImGuiControll.EndMenuBar();
 
 		for (int i = 0; i < sModules.size(); i++)
 		{
-			auto& module = sModules[i];
-			if (!module->IsOpen())
+			auto& ui_module = sModules[i];
+			if (!ui_module->IsOpen())
 			{
-				auto iterator = std::find(sModules.begin(), sModules.end(), module);
+				auto iterator = std::find(sModules.begin(), sModules.end(), ui_module);
 				sModules.erase(iterator);
 			}
 		}
 
-		for (auto& module : sModules)
+		for (auto& ui_module : sModules)
 		{
-			module->Draw(dt);
+			ui_module->Draw(dt);
 		}
 
 		mImGuiControll.End();

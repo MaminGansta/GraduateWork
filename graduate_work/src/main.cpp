@@ -1,11 +1,7 @@
 
 #include "bubble_entry_point.h"
 
-#include "box_filter.h"
-#include "gauss_filter.h"
-#include "sharpness_filter.h"
-#include "conv_calculation/conv_calculation.h"
-
+#include "image_processing.h"
 
 #include "main_window.h"
 #include "image_window.h"
@@ -21,19 +17,18 @@ struct MyApplication : Application
 	{
 		//Texture2D image("resources/images/nature.jpg");
 
-		Image image("resources/images/nature.jpg");
+		cpu::Image image("resources/images/nature.jpg");
 
 		//UI::AddModule<ImageWindow>(Renderer::CopyTexture2D(image));
-		//
+
 		Kernel kernel = CreateSharpnessFilter(3, 40);
-		//
+
 		//Texture2D res = kernel.ApplyGPU(image);
 		//UI::AddModule<ImageWindow>(std::move(res));
 
 		image = cpu::ApplyKernel(kernel, image);
 
 		UI::AddModule<ImageWindow>(image.LoadOnGPU());
-
 
 		// OpenCL temp
 		//std::vector<cl::Platform> platforms;
