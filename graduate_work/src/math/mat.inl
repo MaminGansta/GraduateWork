@@ -24,7 +24,7 @@ namespace gm
 			for (int j = 0; j < mWidth; j++)
 			{
 				const Vec<T>& vec = *(rows.begin() + i);
-				assert(vec.GetSize() == mWidth);
+				BUBBLE_ASSERT(vec.GetSize() == mWidth, "Invalid mat size");
 				mData[i * mWidth + j] = vec[j];
 			}
 		}
@@ -34,28 +34,28 @@ namespace gm
 	template <typename T>
 	T* Mat<T>::operator[](int idx)
 	{
-		assert(*(uint32_t*)&idx < mHeight, "Out of bound access");
+		BUBBLE_ASSERT(*(uint32_t*)&idx < mHeight, "Out of bound access");
 		return mData.data() + mWidth * idx;
 	}
 
 	template <typename T>
 	const T* Mat<T>::operator[](int idx) const
 	{
-		assert(*(uint32_t*)&idx < mHeight, "Out of bound access");
+		BUBBLE_ASSERT(*(uint32_t*)&idx < mHeight, "Out of bound access");
 		return mData.data() + mWidth * idx;
 	}
 
 	template <typename T>
 	Vec<T> Mat<T>::GetRow(int idx) const
 	{
-		assert(*(uint32_t*)&idx < GetRowsNum(), "Out of bound access");
+		BUBBLE_ASSERT(*(uint32_t*)&idx < GetRowsNum(), "Out of bound access");
 		return Vec<T>(GetRowsNum(), mData.data() + GetRowsNum() * idx);
 	}
 
 	template <typename T>
 	Vec<T> Mat<T>::GetCol(int idx) const
 	{
-		assert(*(uint32_t*)&idx < GetColsNum(), "Out of bound access");
+		BUBBLE_ASSERT(*(uint32_t*)&idx < GetColsNum(), "Out of bound access");
 		Vec<T> vec(GetColsNum());
 		for (int i = 0; i < GetColsNum(); i++)
 		{
@@ -67,8 +67,8 @@ namespace gm
 	template <typename T>
 	void gm::Mat<T>::SetRow(int idx, const Vec<T>& row)
 	{
-		assert(*(uint32_t*)&idx < GetRowsNum(), "Out of bound access");
-		assert(row.GetSize() == GetRowsNum(), "Out of bound access");
+		BUBBLE_ASSERT(*(uint32_t*)&idx < GetRowsNum(), "Out of bound access");
+		BUBBLE_ASSERT(row.GetSize() == GetRowsNum(), "Out of bound access");
 
 		memmove(mData.data() + GetColsNum() * idx, row.GetData(), sizeof(T) * row.GetSize());
 	}
@@ -77,8 +77,8 @@ namespace gm
 	template <typename T>
 	void Mat<T>::SetCol(int idx, const Vec<T>& col)
 	{
-		assert(*(uint32_t*)&idx < GetColsNum(), "Out of bound access");
-		assert(col.GetSize() == GetColsNum(), "Out of bound access");
+		BUBBLE_ASSERT(*(uint32_t*)&idx < GetColsNum(), "Out of bound access");
+		BUBBLE_ASSERT(col.GetSize() == GetColsNum(), "Out of bound access");
 
 		for (int i = 0; i < GetColsNum(); i++)
 		{

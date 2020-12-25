@@ -19,14 +19,14 @@ namespace gm
 	template <typename T>
 	T& VecView<T>::operator[](int idx)
 	{
-		assert(*(uint32_t*)&idx < GetSize(), "Out of bound access");
+		BUBBLE_ASSERT(*(uint32_t*)&idx < GetSize(), "Out of bound access");
 		return mHead[idx];
 	}
 
 	template <typename T>
 	const T& VecView<T>::operator[](int idx) const
 	{
-		assert(*(uint32_t*)&idx < GetSize(), "Out of bound access");
+		BUBBLE_ASSERT(*(uint32_t*)&idx < GetSize(), "Out of bound access");
 		return mHead[idx];
 	}
 

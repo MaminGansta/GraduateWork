@@ -5,6 +5,8 @@
 #include <cassert>
 #include <vector>
 
+#include "bubble.h"
+
 
 namespace gm
 {

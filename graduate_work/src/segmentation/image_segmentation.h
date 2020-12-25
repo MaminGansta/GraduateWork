@@ -1,8 +1,10 @@
 #pragma once
 
+#include "point.h"
 #include "image_processing.h"
 
-Image KMeansSegmentation()
+inline cpu::Image KMeansImageSegmentation(const cpu::Image& image, const DistaceRateFunc& distance_rate)
 {
+
 
 }

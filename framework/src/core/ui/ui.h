@@ -24,14 +24,17 @@ namespace Bubble
 		void OnUpdate(DeltaTime dt);
 
 		template <typename T, typename ...Args>
-		static int AddModule(Args&& ...args)
-		{
-			sModules.push_back(CreateScope<T>(std::forward<Args>(args)...));
-			return sModules.back()->GetID();
-		}
+		static int AddModule(Args&& ...args);
 		static int AddModule(Scope<Module>&& ui_module);
 		static void RemoveModule(int module_id);
 		static void SetMenuBar(std::function<void()>&& draw_menubar);
 	};
+
+	template <typename T, typename ...Args>
+	int Bubble::UI::AddModule(Args&& ...args)
+	{
+		sModules.push_back(CreateScope<T>(std::forward<Args>(args)...));
+		return sModules.back()->GetID();
+	}
 
 }

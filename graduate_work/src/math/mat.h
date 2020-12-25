@@ -2,7 +2,7 @@
 
 #include "vec.h"
 
-#include <cassert>
+#include <assert.h>
 #include <algorithm>
 
 

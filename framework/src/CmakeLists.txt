@@ -21,6 +21,10 @@ add_definitions(-D"GLM_FORCE_SWIZZLE")
 add_definitions(-D"STBI_WINDOWS_UTF8")
 add_definitions(-D"STB_IMAGE_IMPLEMENTATION")
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    add_definitions(-D"CLANG_CXX11_ATOMICS 1")
+endif()
+
 # Include directories
 target_include_directories(
     Framework PUBLIC
