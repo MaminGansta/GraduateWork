@@ -9,4 +9,3 @@ set(SOURCES
 )
 
 add_library(stb_image ${SOURCES})
-

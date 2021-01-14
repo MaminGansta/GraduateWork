@@ -8,6 +8,7 @@ file(GLOB_RECURSE HDRS *.h)
 add_library(Framework ${SRCS} ${HDRS})
 
 target_link_libraries(Framework imgui)
+target_link_libraries(Framework stb_image)
 
 set_target_properties(
     Framework PROPERTIES
@@ -19,7 +20,6 @@ set_target_properties(
 add_definitions(-D"GLEW_STATIC")
 add_definitions(-D"GLM_FORCE_SWIZZLE")
 add_definitions(-D"STBI_WINDOWS_UTF8")
-add_definitions(-D"STB_IMAGE_IMPLEMENTATION")
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     add_definitions(-D"CLANG_CXX11_ATOMICS 1")

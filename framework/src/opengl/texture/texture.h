@@ -2,7 +2,9 @@
 
 #include "renderer_base.h"
 #include "texture/texture.h"
-#include "glm/glm.hpp"
+
+#include <glm/glm.hpp>
+#include <stb_image.h>
 
 
 namespace Bubble
