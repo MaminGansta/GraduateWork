@@ -3,15 +3,17 @@
 #include "core.h"
 #include "opencl_base.h"
 #include "opencl_errors.h"
+#include "opencl_device.h"
 
 #include <stdexcept>
 #include <fstream>
 
 namespace Bubble
 {
-	inline cl::Kernel CreateKenel(const std::string& file_name, 
-								   const std::string& kernel_name, 
-								   const cl::Device& device)
+	inline std::tuple<cl::Kernel, cl::Context, cl::Device> 
+				CreateKernel(const std::string& file_name, 
+							 const std::string& kernel_name, 
+							 const cl::Device& device)
 	{
 		std::ifstream kernel_file(file_name);
 
@@ -34,7 +36,8 @@ namespace Bubble
 		{
 			std::string name = device.getInfo<CL_DEVICE_NAME>();
 			std::string buildlog = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
-			LOG_CORE_ERROR("Build error log: \n File: {} Device: {} \n Info: {}", file_name, name, buildlog);
+			LOG_CORE_ERROR("Build error log: \n File: {} Device: {} \n\nInfo:\n{}", file_name, name, buildlog);
+			throw std::runtime_error("OpenCL kernel built failed: kernel name> " + kernel_name);
 		}
 
 		cl::Kernel kernel(program, kernel_name.c_str(), &error);
@@ -43,6 +46,21 @@ namespace Bubble
 			LOG_CORE_ERROR("Kernel build failed: {}", GetCLErrorString(error));
 		}
 
-		return kernel;
+		return { kernel, context, device };
+	}
+
+
+	inline std::tuple<cl::Kernel, cl::Context, cl::Device>
+		CreateKernel(const std::string& file_name,
+			const std::string& kernel_name,
+			DeviceType device_type = DeviceType::ALL,
+			int device_id = 0)
+	{
+		std::vector<cl::Platform> platforms;
+		cl::Platform::get(&platforms);
+		auto devices = GetDevices(platforms[0], device_type);
+
+		device_id = std::min(device_id, (int)devices.size());
+		return CreateKernel(file_name, kernel_name, devices[device_id]);
 	}
 }

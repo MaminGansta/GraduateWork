@@ -1,6 +1,6 @@
 #pragma once
 
-#include "opencl_base.h"
+#include "cl/cl.hpp"
 
 namespace Bubble
 {

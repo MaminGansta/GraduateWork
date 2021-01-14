@@ -6,8 +6,11 @@
 #include "sharpness_filter.h"
 
 #include "cpu/image/image_cpu.h"
-#include "cpu/kmeans/kmeans_image_cpu.h"
+#include "cpu/kmeans/pixel.h"
+//#include "cpu/kmeans/kmeans_image_cpu.h"
+#include "cpu/meanshift/meanshift_cpu.h"
 #include "cpu/conv_calculation/conv_calculation_cpu.h"
 
 #include "gpu/image/image_gpu.h"
 #include "gpu/conv_calculation/conv_calculation_gpu.h"
+
