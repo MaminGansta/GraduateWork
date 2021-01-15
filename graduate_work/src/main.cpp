@@ -44,22 +44,22 @@ std::vector<uint8_t> rand_color()
 
 std::vector<Pixel> GetPixels(const cpu::Image& image)
 {
-	uint32_t image_size = image.GetWidth() * image.GetHeight();
+	uint32_t image_size = image.GetHeight() * image.GetHeight();
 	std::vector<Pixel> pixels;
 	pixels.reserve(image_size);
 
-	for (int i = 0; i < image_size; i++)
+	for (int y = 0; y < image.GetHeight(); y++)
 	{
-		Pixel pixel;
-		pixel.x = i % image.GetWidth();
-		pixel.y = i / image.GetWidth();
-
-		const uint8_t* color = image.GetColor(pixel.x, pixel.y);
-		for (int channel = 0; channel < 4; channel++)
+		for (int x = 0; x < image.GetWidth(); x++)
 		{
-			pixel.color[channel] = color[channel];
+			Pixel pixel = {x, y};
+			const uint8_t* color = image.GetColor(x, y);
+			for (int i = 0; i < 4; i++)
+			{
+				pixel.color[i] = color[i];
+			}
+			pixels.push_back(pixel);
 		}
-		pixels.push_back(pixel);
 	}
 
 	return std::move(pixels);
@@ -75,6 +75,8 @@ void meanshift_test()
 	std::vector<Pixel> shifted(pixels.size());
 	std::vector<Pixel> shifted_debug(pixels.size());
 
+	UI::AddModule<ImageWindow>(image.LoadOnGPU());
+
 	// CPU
 	//auto clusters = MeanShift::Run(pixels, 10, 3);
 
@@ -82,11 +84,12 @@ void meanshift_test()
 	// ==========================================================
 	
 	// Algorithm params
-	float radius = 50.0f;
-	int iterations = 5;
+	float radius = 70.0f;
+	int iterations = 17;
 
-	auto kernel_path = "C:/Users/lol/Desktop/GraduateWork/graduate_work/resources/kernels/test.cl";
-	auto kernel_name = "HelloWorld";
+	auto kernel_path = "C:/Users/lol/Desktop/GraduateWork/graduate_work/resources/kernels/mean_shift.cl";
+	//auto kernel_path = "resources/kernels/test.cl";
+	auto kernel_name = "MeanShift";
 	auto [kernel, context, device] = CreateKernel(kernel_path, kernel_name, DeviceType::GPU);
 
 	cl_int err = 0;
@@ -97,9 +100,6 @@ void meanshift_test()
 	cl::Buffer buffer2(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY, sizeof(Pixel) * pixels.size(), nullptr, &err);
 	cl::Buffer buffers[2] = { buffer1, buffer2 };
 
-	std::vector<cl::Event> events;
-	events.reserve(iterations);
-
 	cl::CommandQueue queue(context, device);
 
 	for (int i = 0; i < iterations; i++)
@@ -109,16 +109,17 @@ void meanshift_test()
 		clcall(kernel.setArg(2, (int)pixels.size()));
 		clcall(kernel.setArg(3, radius));
 
-		cl::Event event;
-		clcall(queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(pixels.size()), cl::NullRange, &events, &event));
-		events.push_back(event);
-
-		//clcall(queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(pixels.size())));
-		//cl::finish();
+		int parts = ceil((float)pixels.size() / 400'000);
+		int part = pixels.size() / parts;
 		
+		for (int j = 0; j < parts; j++)
+		{
+			clcall(queue.enqueueNDRangeKernel(kernel, cl::NDRange(part * j), cl::NDRange(pixels.size() / parts)));
+		}
+		cl::finish();
 		std::swap(active_buffer_id, sub_buffer_id);
 
-		//==============================
+		//============== Take snapshot ============== 
 		clcall(queue.enqueueReadBuffer(buffers[active_buffer_id], GL_TRUE, 0, sizeof(Pixel) * pixels.size(), shifted.data()));
 		
 		cpu::Image image_temp(image.mSpecification);
@@ -128,12 +129,10 @@ void meanshift_test()
 			image_temp.SetColor(color, pixel.x, pixel.y);
 		}
 		UI::AddModule<ImageWindow>(image_temp.LoadOnGPU());
-		//==============================
+		//===========================================
 	}
 
 	//clcall(queue.enqueueReadBuffer(buffers[active_buffer_id], GL_TRUE, 0, sizeof(Pixel) * pixels.size(), shifted.data(), &events));
-	
-	
 	//for (auto& pixel : shifted)
 	//{
 	//	uint8_t color[] = { pixel.color[0], pixel.color[1], pixel.color[2] };
@@ -142,16 +141,17 @@ void meanshift_test()
 	//UI::AddModule<ImageWindow>(image2.LoadOnGPU());
 
 
-
 	auto clusters = MeanShift::CreateClusters(pixels, shifted, radius);
 	// ==========================================================
 
 	std::vector<std::vector<uint8_t>> c;
+	srand(time(0));
+
 	for (int i = 0; i < clusters.size(); i++)
 	{
 		c.push_back(rand_color());
 	}
-
+	
 	for (int i = 0; i < clusters.size(); i++)
 	{
 		for (Pixel& pixel : clusters[i])

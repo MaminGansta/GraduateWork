@@ -29,22 +29,24 @@ namespace Bubble
 		cl::Context context(device);
 		cl::Program program(context, sources);
 
-		auto error = program.build("-cl-std=CL1.2");
-		cl_build_status status = program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(device);
+		cl_int error = 0;
+		cl_build_status status = 0;
+		
+		error = program.build("-cl-std=CL1.2");
+		status = program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(device);
 
 		if (status == CL_BUILD_ERROR)
 		{
 			std::string name = device.getInfo<CL_DEVICE_NAME>();
-			std::string buildlog = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
-			LOG_CORE_ERROR("Build error log: \n File: {} Device: {} \n\nInfo:\n{}", file_name, name, buildlog);
+			std::string build_log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
+			LOG_CORE_ERROR("Build error log: \n File: {} Device: {} \n\nInfo:\n{}", file_name, name, build_log);
 			throw std::runtime_error("OpenCL kernel built failed: kernel name> " + kernel_name);
 		}
 
 		cl::Kernel kernel(program, kernel_name.c_str(), &error);
 
-		if (error) {
-			LOG_CORE_ERROR("Kernel build failed: {}", GetCLErrorString(error));
-		}
+		if (error)
+			LOG_CORE_ERROR("Kernel build failed: {}", clGetErrorString(error));
 
 		return { kernel, context, device };
 	}
@@ -56,11 +58,8 @@ namespace Bubble
 			DeviceType device_type = DeviceType::ALL,
 			int device_id = 0)
 	{
-		std::vector<cl::Platform> platforms;
-		cl::Platform::get(&platforms);
-		auto devices = GetDevices(platforms[0], device_type);
-
-		device_id = std::min(device_id, (int)devices.size());
+		auto devices = GetAllDevices(device_type);
+		BUBBLE_CORE_ASSERT(device_id < devices.size(), "Invalid device id");
 		return CreateKernel(file_name, kernel_name, devices[device_id]);
 	}
 }

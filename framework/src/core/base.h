@@ -14,6 +14,14 @@
 #define BUBBLE_CORE_ASSERT(x, ...) { if(!(x)) { LOG_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); assert(false); } }
 #endif
 
+#ifdef _DEBUG
+	#define BUBBLE_ASSERT_D(x, ...) { if (!(x)) { LOG_ERROR("Assertion Failed: {0}", __VA_ARGS__); assert(false); } }
+	#define BUBBLE_CORE_ASSERT_D(x, ...) { if(!(x)) { LOG_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); assert(false); } }
+#else
+	#define BUBBLE_ASSERT_D(x, ...)
+	#define BUBBLE_CORE_ASSERT_D(x, ...)
+#endif
+
 #define BIT(x) (1 << x)
 
 namespace Bubble
@@ -36,8 +44,6 @@ namespace Bubble
 		return std::make_shared<T>(std::forward<Args>(args)...);
 	}
 }
-
-
 
 // Temp
 inline std::string ReplaceAll(std::string str, const std::string& from, const std::string& to)

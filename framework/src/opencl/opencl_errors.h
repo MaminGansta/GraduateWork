@@ -4,7 +4,7 @@
 
 namespace Bubble
 {
-	inline std::string GetCLErrorString(cl_int error)
+	inline std::string clGetErrorString(cl_int error)
 	{
 		switch (error)
 		{

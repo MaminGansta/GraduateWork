@@ -28,12 +28,7 @@ namespace cpu
 		mSpecification.Width = width;
 		mSpecification.Height = height;
 		SetTextureSpecChanels(mSpecification, 4);
-
 		free(data);
-
-		//auto [data, spec] = Texture2D::OpenRawImage(path);
-		//mData = std::move(data);
-		//mSpecification = spec;
 	}
 
 
@@ -85,8 +80,7 @@ namespace cpu
 			image.mSpecification = mSpecification;
 			image.Invalidate();
 		}
-
-
+		image.SetData(mData.get(), GetWidth() * GetHeight() * GetChannels());
 	}
 
 }

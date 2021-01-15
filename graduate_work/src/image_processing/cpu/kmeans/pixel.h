@@ -5,9 +5,16 @@
 
 struct Pixel
 {
-	float x = 0, y = 0;
-	float color[4] = {0};
-
+	union 
+	{
+		struct
+		{
+			float x, y;
+			float color[4];
+		};
+		float vec[8] = {0};
+	};
+	
 	Pixel& operator+= (const Pixel& other)
 	{
 		x += other.x;

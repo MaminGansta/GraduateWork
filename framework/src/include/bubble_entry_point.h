@@ -16,6 +16,7 @@ int main(int argc, char* argv[])
 	}
 	catch (const std::exception& e) {
 		LOG_CORE_ERROR("Exception has been trigered:\n {}", e.what());
+		std::this_thread::sleep_for(5s);
 	}
 
 	return 0;

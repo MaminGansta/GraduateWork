@@ -22,6 +22,18 @@ namespace Bubble
 	};
 }
 
+#ifdef _DEBUG
+	#define DEBUG_LOG_TRACE(...) ::Bubble::Log::GetLogger()->trace(__VA_ARGS__)
+	#define DEBUG_LOG_INFO(...)  ::Bubble::Log::GetLogger()->info(__VA_ARGS__)
+	#define DEBUG_LOG_WARN(...)  ::Bubble::Log::GetLogger()->warn(__VA_ARGS__)
+	#define DEBUG_LOG_ERROR(...) ::Bubble::Log::GetLogger()->error(__VA_ARGS__)
+#else
+	#define DEBUG_LOG_TRACE(...)
+	#define DEBUG_LOG_INFO(...) 
+	#define DEBUG_LOG_WARN(...) 
+	#define DEBUG_LOG_ERROR(...)
+#endif
+
 #define LOG_CORE_TRACE(...) ::Bubble::Log::GetCoreLogger()->trace(__VA_ARGS__)
 #define LOG_CORE_INFO(...)  ::Bubble::Log::GetCoreLogger()->info(__VA_ARGS__)
 #define LOG_CORE_WARN(...)  ::Bubble::Log::GetCoreLogger()->warn(__VA_ARGS__)
