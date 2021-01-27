@@ -82,8 +82,16 @@ namespace Bubble
 	{
 		uint32_t channels = ExtractTextureSpecChannels(mSpecification);
 		BUBBLE_CORE_ASSERT(size == mSpecification.Width * mSpecification.Height * channels, "Data must be entire texture!");
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
-			mSpecification.Width, mSpecification.Height, mSpecification.DataFormat, mSpecification.ChanelFormat, data);
+		glcall(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
+				mSpecification.Width, mSpecification.Height, mSpecification.DataFormat, mSpecification.ChanelFormat, data));
+	}
+
+	void Texture2D::GetData(void* data, uint32_t size) const
+	{
+		Bind();
+		uint32_t channels = ExtractTextureSpecChannels(mSpecification);
+		BUBBLE_CORE_ASSERT(size == mSpecification.Width * mSpecification.Height * channels, "Data must be entire texture!");
+		glcall(glGetTexImage(GL_TEXTURE_2D, 0, mSpecification.DataFormat, mSpecification.ChanelFormat, data));
 	}
 
 	void Texture2D::Bind(uint32_t slot) const
@@ -191,6 +199,11 @@ namespace Bubble
 				BUBBLE_CORE_ASSERT(false, "Format not supported!");
 		}
 		return bpp;
+	}
+
+	uint32_t GetTextureSize(const Texture2DSpecification& spec)
+	{
+		return spec.Width * spec.Height * ExtractTextureSpecChannels(spec);
 	}
 
 }

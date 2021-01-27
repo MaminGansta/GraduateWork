@@ -28,7 +28,7 @@ namespace Bubble
 		cl_int status;
 		std::vector<cl::Device> devices;
 		status = platform.getDevices(clDeviceType, &devices);
-		DEBUG_LOG_WARN("[OpenCL Debug Log]> \n Platform: {} \n Device type: {} \n Device status: {}",
+		DEBUG_LOG_WARN("[OpenCL Debug Log]\n Platform: {} \n Device type: {} \n Device status: {}",
 			platform.getInfo<CL_PLATFORM_NAME>(), GetDeviceTypeString(device_type), clGetErrorString(status));
 		return devices;
 	}

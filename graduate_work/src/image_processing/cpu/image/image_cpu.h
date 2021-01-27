@@ -16,6 +16,7 @@ namespace cpu
 		Image() = default;
 		Image(const std::string& path);
 		Image(const Texture2DSpecification& spec);
+		Image(const Texture2D& texture);
 
 		uint8_t* GetData() const { return mData.get(); }
 		uint32_t GetWidth() const { return mSpecification.Width; };
@@ -26,8 +27,10 @@ namespace cpu
 		const uint8_t* GetColor(uint32_t x, uint32_t y) const;
 		void SetColor(const uint8_t* color, uint32_t x, uint32_t y);
 
-		Texture2D LoadOnGPU();
-		void LoadOnGPU(Texture2D& image);
+		Texture2D LoadOnGPU() const;
+		void LoadOnGPU(Texture2D& image) const;
+
+		operator Texture2D() const { return LoadOnGPU(); }
 	};
 
 }

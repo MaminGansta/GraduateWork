@@ -39,7 +39,7 @@ namespace Bubble
 		{
 			std::string name = device.getInfo<CL_DEVICE_NAME>();
 			std::string build_log = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
-			LOG_CORE_ERROR("Build error log: \n File: {} Device: {} \n\nInfo:\n{}", file_name, name, build_log);
+			LOG_CORE_ERROR("[OpenCL Eror]\n Build error log:\n File: {} Device: {} \n\nInfo:\n{}", file_name, name, build_log);
 			throw std::runtime_error("OpenCL kernel built failed: kernel name> " + kernel_name);
 		}
 

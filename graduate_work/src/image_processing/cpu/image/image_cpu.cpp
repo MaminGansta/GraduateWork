@@ -40,6 +40,14 @@ namespace cpu
 		mData = Scope<uint8_t>(data);
 	}
 
+	Image::Image(const Texture2D& texture)
+	{
+		uint32_t texture_size = GetTextureSize(texture.mSpecification);
+		mSpecification = texture.mSpecification;
+		mData = Scope<uint8_t>((uint8_t*)malloc(texture_size));
+		texture.GetData(mData.get(), texture_size);
+	}
+
 	const uint8_t* Image::GetColor(uint32_t x, uint32_t y) const
 	{
 		y *= GetChannels();
@@ -66,14 +74,14 @@ namespace cpu
 		memmove(&data[y * GetWidth() + x], color, GetChannels());
 	}
 
-	Texture2D Image::LoadOnGPU()
+	Texture2D Image::LoadOnGPU() const
 	{
 		Texture2D texture(mSpecification);
 		texture.SetData(mData.get(), GetWidth() * GetHeight() * GetChannels());
 		return texture;
 	}
 
-	void Image::LoadOnGPU(Texture2D& image)
+	void Image::LoadOnGPU(Texture2D& image) const
 	{
 		if (mSpecification != image.mSpecification)
 		{

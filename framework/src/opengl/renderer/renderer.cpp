@@ -173,6 +173,17 @@ namespace Bubble
 	}
 
 
+	void Renderer::DrawTexture2D(const Texture2D& src, Texture2D& dst)
+	{
+		Framebuffer fb(std::move(dst));
+
+		fb.Bind();
+		sPassThroughShader->SetTexture2D("uImage", src);
+		DrawIndices(sFullScreenVAO);
+		dst = fb.GetColorAttachment();
+	}
+
+
 
 	// ==================== Private methods ====================
 

@@ -52,6 +52,7 @@ namespace Bubble
 		// ============ Image operations ============
 		static Ref<Texture2D> CopyTexture2D(const Ref<Texture2D>& texture);
 		static Texture2D CopyTexture2D(const Texture2D& texture);
+		static void DrawTexture2D(const Texture2D& src, Texture2D& dst);
 
 	private:
 		static void LoadData();

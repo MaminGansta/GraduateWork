@@ -8,21 +8,22 @@
 	float PixelDistance(float8 a, float8 b)
 	{
 		float res = 0;
-		//res += pow(a.x - b.x, 2);
-		//res += pow(a.y - b.y, 2);
-		res += fabs(a.x - b.x) * 2;
-		res += fabs(a.y - b.y) * 2;
-
+		float* a_raw = &a;
+		float* b_raw = &b;
 		float brightness1 = 0;
 		float brightness2 = 0;
-	
+
+		res += pow(a.x - b.x, 2) * 3;
+		res += pow(a.y - b.y, 2) * 3;
+		
 		for (int i = 2; i < 5; i++)
 		{
-			res += pow(a[i] - b[i], 2) * 10;
-			brightness1 += a[i];
-			brightness2 += a[i];
+			res += pow(a_raw[i] - b_raw[i], 2) * 12;
+			
+			brightness1 += a_raw[i];
+			brightness2 += b_raw[i];
 		}
-		res += pow(brightness2 - brightness1, 2) * 5;
+		//res += pow(brightness2 - brightness1, 2);
 		return sqrt(res);
 	}
 
@@ -32,11 +33,12 @@
 		a = pow(a, 2);
 
 		float res = 0;
-		for (int i = 0; i < 8; i++)
-		{
-			res += a[i];
-		}
+		float* a_raw = &a;
 
+		for (int i = 0; i < 6; i++)
+		{
+			res += a_raw[i];
+		}
 		return sqrt(res);
 	}
 
@@ -44,7 +46,7 @@
 __kernel void MeanShift(__global float8* input, __global float8* output, int buffer_size, float radius)
 {
 	float8 active_pixel = input[get_global_id(0)];
-	float8 mean_pixel = (float8)(0);
+	float8 mean_pixel = (float8)(0, 0, 0, 0, 0, 0, 0, 0);
 	float total = 0;
 	
 	for (int i = 0; i < buffer_size; i++)

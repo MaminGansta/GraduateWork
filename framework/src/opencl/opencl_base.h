@@ -11,7 +11,7 @@
 			cl_int err = func;\
 			if (err)\
 			{\
-				LOG_CORE_ERROR("[OpenCL Error]> {}", clGetErrorString(err));\
+				LOG_CORE_ERROR("[OpenCL Error]\n {}", clGetErrorString(err));\
 				assert(false);\
 			}\
 		}

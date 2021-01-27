@@ -55,6 +55,7 @@ namespace Bubble
 
 		// Size in bytes
 		void SetData(void* data, uint32_t size);
+		void GetData(void* data, uint32_t size) const;
 
 		void Bind(uint32_t slot = 0) const;
 		static void UnbindAll() { glActiveTexture(GL_TEXTURE0); }
@@ -70,4 +71,5 @@ namespace Bubble
 
 	void SetTextureSpecChanels(Texture2DSpecification& spec, int channels);
 	uint32_t ExtractTextureSpecChannels(const Texture2DSpecification& spec);
+	uint32_t GetTextureSize(const Texture2DSpecification& spec);
 }
