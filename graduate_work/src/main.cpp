@@ -5,6 +5,7 @@
 #include "main_window.h"
 #include "image_window.h"
 
+#include "genetic_algorithm/get_alg.h"
 
 void meanshift_test();
 
@@ -17,6 +18,8 @@ struct MyApplication : Application
 
 	void OnCreate()
 	{
+
+
 		meanshift_test();
 	}
 
@@ -68,7 +71,7 @@ std::vector<Pixel> GetPixels(const cpu::Image& image)
 
 void meanshift_test()
 {
-	cpu::Image input("resources/images/car1.jpg");
+	cpu::Image input("resources/images/lenna.jpg");
 	gpu::Image src_image(input);
 	//gpu::Image dst_image(src_image.GetWidth() / 2, src_image.GetHeight() / 2);
 	gpu::Image dst_image(600, 480);
