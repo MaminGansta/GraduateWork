@@ -1,13 +1,12 @@
 
 #include "bubble_entry_point.h"
+
+#include "gen_alg.h"
 #include "image_processing.h"
 
 #include "main_window.h"
 #include "image_window.h"
-
-#include "genetic_algorithm/get_alg.h"
-
-void meanshift_test();
+#include "selectible_image_window.h"
 
 
 struct MyApplication : Application
@@ -18,9 +17,14 @@ struct MyApplication : Application
 
 	void OnCreate()
 	{
+		void meanshift_test();
+		void gen_alg_test();
 
 
-		meanshift_test();
+		UI::AddModule<SelectibleImageWindow>(gpu::Image(glm::vec4(1.0f)));
+
+		//gen_alg_test();
+		//meanshift_test();
 	}
 
 };
@@ -32,6 +36,38 @@ Application* CreateApplication()
 
 
 // ====================== Test area ====================== 
+
+
+struct MeanShiftBreed
+{
+	Ref<RNG> mRNG = CreateRef<RNG>();
+	uint8_t mGens[10] = {0};
+
+	static inline float GetTargetValue(MeanShiftBreed entity)
+	{
+		return 0.0f;
+	}
+
+	static inline MeanShiftBreed Crossover(const MeanShiftBreed& a, const MeanShiftBreed& b)
+	{ 
+		return a;
+	}
+
+	static inline MeanShiftBreed Mutation (const MeanShiftBreed& a)
+	{ 
+		return a;
+	}
+};
+
+void gen_alg_test()
+{
+	std::vector<MeanShiftBreed> a(5);
+	GeneticAlgorithm(a, 10);
+}
+
+
+
+// ====================== MeanShift ====================== 
 
 std::vector<uint8_t> rand_color()
 {

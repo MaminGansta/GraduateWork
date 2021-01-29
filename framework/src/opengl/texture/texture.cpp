@@ -8,13 +8,15 @@ namespace Bubble
 	{
 		mSpecification.Width = 1;
 		mSpecification.Height = 1;
-		mSpecification.InternalFormat = GL_RGBA;
-		mSpecification.DataFormat = GL_UNSIGNED_BYTE;
+		mSpecification.InternalFormat = GL_RGBA8;
+		mSpecification.DataFormat = GL_RGBA;
+		mSpecification.ChanelFormat = GL_FLOAT;
 		mSpecification.MinFiler = GL_NEAREST;
 		mSpecification.MagFilter = GL_NEAREST;
 		mSpecification.WrapS = GL_REPEAT;
 		mSpecification.WrapT = GL_REPEAT;
 		Invalidate();
+		SetData((void*)&color, 4);
 	}
 
 	Texture2D::Texture2D(const Texture2DSpecification& spec)

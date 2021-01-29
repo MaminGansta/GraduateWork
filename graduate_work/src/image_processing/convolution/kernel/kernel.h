@@ -1,7 +1,7 @@
 #pragma once
 
 #include "bubble.h"
-#include "matricies.h"
+#include "geometry.h"
 
 struct Kernel
 {

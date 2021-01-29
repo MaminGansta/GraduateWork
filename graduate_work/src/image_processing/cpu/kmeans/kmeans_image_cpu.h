@@ -126,7 +126,7 @@ namespace cpu
 			}
 			mean /= cluster.Size();
 			float diff = distance_rate(cluster.mCenter, mean);
-			end |= diff < 5.0f; // step too small
+			end |= diff < 1.0f; // step too small
 			cluster.mCenter = mean;
 		}
 		return end;
@@ -146,7 +146,7 @@ namespace cpu
 		pixel.x = pos % image.GetWidth();
 
 		uint8_t* color = image.GetData() + pos * pixel.channels;
-		for (int i = 0; i < pixel.channels; i++)
+		for (int i = 0; i < 4; i++)
 		{
 			pixel.color[i] = color[i];
 		}

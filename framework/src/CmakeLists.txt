@@ -42,6 +42,7 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/glm/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/opencl3/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/thread_pool/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../dependencies/RNG
 )
 
 # Libraries directories

@@ -34,7 +34,7 @@ namespace gm
 		pointer GetData() { return mData.data(); }
 		const_pointer GetData() const { return mData.data(); }
 
-		uint32_t GetColsNum() const { return std::min(mWidth, (uint32_t)mData.size()); }
+		uint32_t GetColsNum() const { return std::min(mWidth,  (uint32_t)mData.size()); }
 		uint32_t GetRowsNum() const { return std::min(mHeight, (uint32_t)mData.size()); }
 
 		static Mat<T> GetIdentity(int wdith, int height);
