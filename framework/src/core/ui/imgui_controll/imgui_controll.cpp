@@ -20,6 +20,7 @@ namespace Bubble
         io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
         //io.ConfigViewportsNoAutoMerge = true;
         //io.ConfigViewportsNoTaskBarIcon = true;
+		io.ConfigWindowsMoveFromTitleBarOnly = true;
 
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();

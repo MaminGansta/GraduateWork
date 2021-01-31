@@ -21,6 +21,8 @@ namespace Bubble
 
 		while (sWindow->IsOpen())
 		{
+			Input::NewFrame();
+			
 			SDL_Event event;
 			while (sWindow->PollEvent(event))
 			{
@@ -29,11 +31,11 @@ namespace Bubble
 				Input::OnEvent(event);
 				mUI->mImGuiControll.OnEvent(event);
 			}
-			OnUpdate(mTimer.GetDeltaTime());
+			
+			this->OnUpdate(mTimer.GetDeltaTime());
 			mUI->OnUpdate(mTimer.GetDeltaTime());
-
 			sWindow->OnUpdate();
-			mTimer.Update();
+			mTimer.OnUpdate();
 		}
 	}
 

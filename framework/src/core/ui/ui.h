@@ -1,6 +1,5 @@
 #pragma once
 
-#include "imgui.h"
 #include "time/timer.h"
 #include "module/module.h"
 #include "imgui_controll/imgui_controll.h"
@@ -13,7 +12,7 @@ namespace Bubble
 {
 	struct UI
 	{
-		static std::vector<Scope<Module>> sModules;
+		static std::vector<Ref<Module>> sModules;
 		static std::function<void()> sDrawMenuBar;
 		ImGuiControll mImGuiControll;
 
@@ -25,7 +24,7 @@ namespace Bubble
 
 		template <typename T, typename ...Args>
 		static int AddModule(Args&& ...args);
-		static int AddModule(Scope<Module>&& ui_module);
+		static int AddModule(Ref<Module>&& ui_module);
 		static void RemoveModule(int module_id);
 		static void SetMenuBar(std::function<void()>&& draw_menubar);
 	};
@@ -33,7 +32,7 @@ namespace Bubble
 	template <typename T, typename ...Args>
 	int Bubble::UI::AddModule(Args&& ...args)
 	{
-		sModules.push_back(CreateScope<T>(std::forward<Args>(args)...));
+		sModules.push_back(CreateRef<T>(std::forward<Args>(args)...));
 		return sModules.back()->GetID();
 	}
 

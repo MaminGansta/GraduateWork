@@ -3,7 +3,7 @@
 
 namespace Bubble
 {
-	int Module::sGlobalID = 0;
+	std::atomic<int> Module::sGlobalID = 0;
 
 	Module::Module()
 		: mID(sGlobalID++),

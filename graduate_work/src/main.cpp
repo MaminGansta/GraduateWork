@@ -20,9 +20,10 @@ struct MyApplication : Application
 		void meanshift_test();
 		void gen_alg_test();
 
+		Ref<SelectibleImageWindow> selectible_window =
+			CreateRef<SelectibleImageWindow>(CreateRef<Texture2D>("resources/images/lenna.jpg"));
 
-		UI::AddModule<SelectibleImageWindow>(gpu::Image(glm::vec4(1.0f)));
-
+		UI::AddModule(selectible_window);
 		//gen_alg_test();
 		//meanshift_test();
 	}

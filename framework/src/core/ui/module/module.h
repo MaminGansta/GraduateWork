@@ -1,14 +1,14 @@
 #pragma once
 
 #include "core.h"
-
+#include <atomic>
 
 namespace Bubble
 {
 	struct Module
 	{
 	private:
-		static int sGlobalID;
+		static std::atomic<int> sGlobalID;
 
 	public:
 		bool mIsOpen;

@@ -13,6 +13,7 @@ namespace Bubble
 		static Window* sWindow;
 		static short sKeyMap[256];
 		static int sMouseKeyMap[16];
+		static int sMouseKeyMapLast[16];
 		static int sMouseWheelOffset;
 
 		static int sMousePosX;
@@ -27,17 +28,31 @@ namespace Bubble
 		// Codes: SDLK_a, SDLK_1, ...
 		static bool IsKeyPressed(SDL_Keycode code);
 		// Codes: SDLK_a, SDLK_1, ...
-		static bool IsKeyClick(SDL_Keycode code);
+		static bool IsKeyClicked(SDL_Keycode code);
 
 		/*
-		*	Codes:
+			Codes:
 			SDL_BUTTON_LEFT
 			SDL_BUTTON_MIDDLE
 			SDL_BUTTON_RIGHT
 			SDL_BUTTON_X1
 			SDL_BUTTON_X2
+
+			@return num of fast clicks before press
 		*/
-		static bool IsMouseButtonPressed(int button);
+		static int IsMouseButtonPressed(int button);
+
+		/*
+			Codes:
+			SDL_BUTTON_LEFT
+			SDL_BUTTON_MIDDLE
+			SDL_BUTTON_RIGHT
+			SDL_BUTTON_X1
+			SDL_BUTTON_X2
+
+			@return num of fast clicks
+		*/
+		static int IsMouseButtonClicked(int button);
 
 		static glm::ivec2 GetMousePosition();
 		static int GetMouseX();

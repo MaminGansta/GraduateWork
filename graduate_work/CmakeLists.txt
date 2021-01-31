@@ -31,6 +31,7 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ui
     ${CMAKE_CURRENT_SOURCE_DIR}/src/geometry
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/imgui_toolkit
     ${CMAKE_CURRENT_SOURCE_DIR}/src/image_processing
     ${CMAKE_CURRENT_SOURCE_DIR}/src/genetic_algorithm
     ${CMAKE_CURRENT_SOURCE_DIR}/src/image_processing/convolution

@@ -16,7 +16,7 @@ namespace Bubble
 		DeltaTime mDeltatime = 0.0f;
 
 	public:
-		DeltaTime Update();
+		DeltaTime OnUpdate();
 		DeltaTime GetDeltaTime();
 
 		// Time from the program start

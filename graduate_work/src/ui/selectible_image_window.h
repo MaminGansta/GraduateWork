@@ -1,12 +1,14 @@
 #pragma once
 
 #include "bubble.h"
-
+#include "imgui_toolkit.h"
 
 struct SelectibleImageWindow : Module
 {
 	Ref<Texture2D> mImage;
-	Ref<Framebuffer> mCanvas = CreateRef<Framebuffer>(100, 100);
+	ImVec2 mPointInClass = {0.5f, 0.5f};
+	ImVec2 mCircleCenter = {0.5f, 0.5f};
+	float mRadius = 0.1f;
 
 	SelectibleImageWindow(const Ref<Texture2D>& image)
 		: mImage(image)
@@ -18,42 +20,51 @@ struct SelectibleImageWindow : Module
 
 	void Draw(DeltaTime dt)
 	{
-		std::string name = "Image" + std::to_string(mImage->mRendererID);
-		//ImGui::ShowDemoWindow();
-
+		std::string name = "Select area " + std::to_string(mImage->mRendererID);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		ImGui::Begin(name.c_str(), &mIsOpen);
 		{
-			ImDrawList* draw_list = ImGui::GetWindowDrawList();
+			// Select circle
+			if (ImGui::IsWindowFocused() && Input::IsMouseButtonPressed(SDL_BUTTON_LEFT))
+			{
+				if (auto mouse_pos = ImGuiTK::GetMousePosInRect())
+				{
+					if (Input::IsMouseButtonClicked(SDL_BUTTON_LEFT))
+					{
+						mCircleCenter = mouse_pos.value();
+					}
+					ImVec2 diff = mCircleCenter - mouse_pos.value();
+					mRadius = 0.0f;
+					mRadius += pow(diff.x, 2);
+					mRadius += pow(diff.y, 2);
+					mRadius = sqrtf(mRadius);
+				}
+			}
 
-			const ImVec2 p = ImGui::GetCursorScreenPos();
-			float x = p.x + 20.0f, y = p.y + 20.0f;
-			float sz = 30;
+			// Move circle
+			if (ImGui::IsWindowFocused() && Input::IsMouseButtonPressed(SDL_BUTTON_MIDDLE))
+			{
+				if (auto mouse_pos = ImGuiTK::GetMousePosInRect())
+				{
+					mCircleCenter = mouse_pos.value();
+				}
+			}
 
-			static ImVec4 colf = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
-			const ImU32 col = ImColor(colf);
+			// Select pixel
+			if (ImGui::IsWindowFocused() && Input::IsMouseButtonClicked(SDL_BUTTON_RIGHT))
+			{
+				if (auto mouse_pos = ImGuiTK::GetMousePosInRect())
+				{
+					mPointInClass = mouse_pos.value();
+				}
+			}
 
-			const ImDrawCornerFlags corners_none = 0;
-			const ImDrawCornerFlags corners_all = ImDrawCornerFlags_All;
-			const ImDrawCornerFlags corners_tl_br = ImDrawCornerFlags_TopLeft | ImDrawCornerFlags_BotRight;
-
-			ImVec2 size = ImGui::GetContentRegionAvail();
-			ImGui::Image((void*)mImage->GetRendererID(), size);
-			
-			//draw_list->AddRect(ImVec2(x, y), ImVec2(x + 20, y + 20), col, 10.0f, corners_all, 3.0f);
-			draw_list->AddRectFilled(ImVec2(x, y), ImVec2(x + sz, y + sz), col);
+			ImGuiTK::DrawImage(mImage);
+			ImGuiTK::DrawFilledRect(mPointInClass, {0.01f, 0.01f}, { 1.0f, 0.0f, 0.0f, 1.0f });
+			ImGuiTK::DrawCircle(mCircleCenter, mRadius, { 1.0f, 0.0f, 0.0f, 1.0f });
 		}
 		ImGui::End();
 		ImGui::PopStyleVar();
-
-
-		//ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
-		//ImGui::Begin(name.c_str(), &mIsOpen);
-		//{
-		//	ImVec2 size = ImGui::GetContentRegionAvail();
-		//	ImGui::Image((void*)mImage->mRendererID, size);
-		//}
-		//ImGui::End();
-		//ImGui::PopStyleVar();
 	}
+
 };

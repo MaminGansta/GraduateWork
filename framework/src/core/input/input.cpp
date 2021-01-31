@@ -7,6 +7,7 @@ namespace Bubble
 	Window* Input::sWindow;
 	short Input::sKeyMap[256];
 	int Input::sMouseKeyMap[16];
+	int Input::sMouseKeyMapLast[16];
 	int Input::sMouseWheelOffset;
 
 	int Input::sMousePosX;
@@ -71,7 +72,7 @@ namespace Bubble
 		return sKeyMap[code];
 	}
 
-	bool Input::IsKeyClick(SDL_Keycode code)
+	bool Input::IsKeyClicked(SDL_Keycode code)
 	{
 		if (code >= 1073741881) {
 			code -= 1073741881;
@@ -79,9 +80,20 @@ namespace Bubble
 		return sKeyMap[code] == 1;
 	}
 
-	bool Input::IsMouseButtonPressed(int button)
+	int Input::IsMouseButtonPressed(int button)
 	{
 		return sMouseKeyMap[button];
+	}
+
+	int Input::IsMouseButtonClicked(int button)
+	{
+		if (sMouseKeyMap[button] && !sMouseKeyMapLast[button])
+		{
+			return sMouseKeyMap[button];
+		}
+		else {
+			return 0;
+		}
 	}
 
 	glm::ivec2 Input::GetMousePosition()
@@ -160,6 +172,7 @@ namespace Bubble
 		sMouseRelPosX = 0.0f;
 		sMouseRelPosY = 0.0f;
 		sMouseWheelOffset = 0.0f;
+		memmove(sMouseKeyMapLast, sMouseKeyMap, sizeof(sMouseKeyMap));
 	}
 
 }

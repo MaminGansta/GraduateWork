@@ -6,7 +6,7 @@ namespace Bubble
 {
 	high_resolution_clock::time_point Timer::sProgramStart = Now();
 
-	DeltaTime Timer::Update()
+	DeltaTime Timer::OnUpdate()
 	{
 		high_resolution_clock::time_point now = Now();
 		duration<float> time_dif = duration_cast<duration<float>>(now - mLastTime);

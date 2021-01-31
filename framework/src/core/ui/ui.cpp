@@ -4,10 +4,10 @@
 
 namespace Bubble
 {
-	std::vector<Scope<Module>> UI::sModules;
+	std::vector<Ref<Module>> UI::sModules;
 	std::function<void()> UI::sDrawMenuBar;
 
-	int UI::AddModule(Scope<Module>&& ui_module)
+	int UI::AddModule(Ref<Module>&& ui_module)
 	{
 		sModules.push_back(std::move(ui_module));
 		return sModules.back()->GetID();
@@ -16,7 +16,7 @@ namespace Bubble
 	void UI::RemoveModule(int module_id)
 	{
 		auto iterator = std::find_if(sModules.begin(), sModules.end(),
-			[module_id](const Scope<Module>& ui_module) { return ui_module->GetID() == module_id; });
+			[module_id](const auto& ui_module) { return ui_module->GetID() == module_id; });
 		sModules.erase(iterator);
 	}
 
