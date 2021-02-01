@@ -4,6 +4,8 @@
 #include "imgui_drawing_tools.h"
 #include "selectible_image_window.h"
 
+#include "tools.h"
+
 
 struct MainWindow : Module
 {

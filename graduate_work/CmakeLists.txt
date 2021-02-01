@@ -30,6 +30,7 @@ target_include_directories(
     GraduateWork PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ui
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/tools
     ${CMAKE_CURRENT_SOURCE_DIR}/src/geometry
     ${CMAKE_CURRENT_SOURCE_DIR}/src/imgui_toolkit
     ${CMAKE_CURRENT_SOURCE_DIR}/src/image_processing

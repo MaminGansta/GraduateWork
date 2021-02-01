@@ -15,4 +15,7 @@ struct Cluster
 
 	auto begin() { return mPoints.begin(); }
 	auto end() { return mPoints.end(); }
+
+    auto begin() const { return mPoints.cbegin(); }
+    auto end() const { return mPoints.cend(); }
 };
