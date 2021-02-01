@@ -27,7 +27,7 @@ struct MainWindow : Module
 			if (ImGui::Button("Stage 1: Choose image", { 200, 50 }))
 			{
 
-			} 
+			}
 			
 			if (mImage)
 			{

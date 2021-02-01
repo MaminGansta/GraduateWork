@@ -23,9 +23,6 @@ struct MyApplication : Application
 		void meanshift_test(const Ref<SelectibleImageWindow>&);
 		void gen_alg_test();
 
-		Ref<Texture2D> image = CreateRef<Texture2D>("resources/images/lenna.jpg");
-		UI::AddModule<MainWindow>(image);
-
 		//gen_alg_test();
 		meanshift_test(selectible_window);
 	}
@@ -39,7 +36,6 @@ Application* CreateApplication()
 
 
 // ====================== Test area ====================== 
-
 
 struct MeanShiftBreed
 {
@@ -74,16 +70,18 @@ void gen_alg_test()
 
 void meanshift_test(const Ref<SelectibleImageWindow>& selectible_window)
 {
-	cpu::Image input("resources/images/lenna.jpg");
-	cpu::Image image(Renderer::ResizeTexture2D(input, 640, 400));
+	cpu::Image input("resources/images/car6.jpg");
+	cpu::Image image(Renderer::ResizeTexture2D(input, 400, 320));
+
+	UI::AddModule<MainWindow>(CreateRef<gpu::Image>(image.LoadOnGPU()));
 
 	// CPU
 	//auto clusters = MeanShift::Run(pixels, 10, 3);
 	
 	MeanShitParams params;
-	params.Radius = 120.0f;
-	params.DistanceCoef = 3;
-	params.ColorCoef = 12;
+	params.Radius = 103;
+	params.DistanceCoef = 5;
+	params.ColorCoef = 8;
 	params.BrightnessCoef = 1;
 	params.Iterations = 16;
 

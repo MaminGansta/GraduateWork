@@ -57,7 +57,3 @@ inline std::vector<Ref<gpu::Image>> GetRefImagesFromPixelData(const std::vector<
     }
     return images;
 }
-
-
-
-

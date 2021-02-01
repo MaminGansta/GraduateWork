@@ -62,9 +62,9 @@ namespace Bubble
 			}
 		}
 
-		for (auto& ui_module : sModules)
+		for (int i = 0; i < sModules.size(); i++)
 		{
-			ui_module->Draw(dt);
+			sModules[i]->Draw(dt);
 		}
 
 		mImGuiControll.End();
