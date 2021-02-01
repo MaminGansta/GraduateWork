@@ -184,8 +184,14 @@ namespace Bubble
 	}
 
 
+    Texture2D Renderer::ResizeTexture2D(const Texture2D& src, int width, int height)
+    {
+        Texture2D dst(width, height);
+        Renderer::DrawTexture2D(src, dst);
+		return dst;
+    }
 
-	// ==================== Private methods ====================
+    // ==================== Private methods ====================
 
 	void Renderer::LoadData()
 	{

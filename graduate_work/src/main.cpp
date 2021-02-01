@@ -8,7 +8,7 @@
 #include "main_window.h"
 #include "image_window.h"
 #include "selectible_image_window.h"
-
+#include "image_gallerey.h"
 
 struct MyApplication : Application
 {
@@ -23,8 +23,8 @@ struct MyApplication : Application
 		void meanshift_test(const Ref<SelectibleImageWindow>&);
 		void gen_alg_test();
 
-		//Ref<Texture2D> image = CreateRef<Texture2D>("resources/images/lenna.jpg");
-		//UI::AddModule<MainWindow>(image);
+		Ref<Texture2D> image = CreateRef<Texture2D>("resources/images/lenna.jpg");
+		UI::AddModule<MainWindow>(image);
 
 		//gen_alg_test();
 		meanshift_test(selectible_window);
@@ -89,13 +89,8 @@ std::vector<uint8_t> rand_color()
 void meanshift_test(const Ref<SelectibleImageWindow>& selectible_window)
 {
 	cpu::Image input("resources/images/lenna.jpg");
-	gpu::Image src_image(input);
-	gpu::Image dst_image(600, 480);
+	cpu::Image image(Renderer::ResizeTexture2D(input, 640, 400));
 
-	Renderer::DrawTexture2D(src_image, dst_image);
-	cpu::Image image(dst_image);
-
-	
 	// CPU
 	//auto clusters = MeanShift::Run(pixels, 10, 3);
 	
@@ -104,7 +99,7 @@ void meanshift_test(const Ref<SelectibleImageWindow>& selectible_window)
 	params.DistanceCoef = 3;
 	params.ColorCoef = 12;
 	params.BrightnessCoef = 1;
-	params.Iterations = 15;
+	params.Iterations = 16;
 
 	gpu::MeanShift meanshift;
 	std::vector<std::vector<Pixel>> snapshots;
@@ -113,6 +108,8 @@ void meanshift_test(const Ref<SelectibleImageWindow>& selectible_window)
 	auto clusters = meanshift.Run(image, params, &snapshots);
 	
 	// Draw snapshots
+	std::vector<Ref<gpu::Image>> images;
+
 	for (const auto& snapshot : snapshots)
 	{
 		cpu::Image snapshot_image(image.mSpecification);
@@ -121,10 +118,11 @@ void meanshift_test(const Ref<SelectibleImageWindow>& selectible_window)
 			uint8_t color[] = { pixel.color[0], pixel.color[1], pixel.color[2] };
 			snapshot_image.SetColor(color, pixel.x, pixel.y);
 		}
-		UI::AddModule<ImageWindow>(snapshot_image.LoadOnGPU());
+		images.push_back(CreateRef<gpu::Image>(snapshot_image.LoadOnGPU()));
+		//UI::AddModule<ImageWindow>(snapshot_image.LoadOnGPU());
 	}
+	UI::AddModule<ImageGralleryWindow>(std::move(images));
 	
-
 	// Draw clusters
 	std::vector<std::vector<uint8_t>> colors;
 	for (int i = 0; i < clusters.size(); i++)

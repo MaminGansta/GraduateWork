@@ -53,6 +53,7 @@ namespace Bubble
 		static Ref<Texture2D> CopyTexture2D(const Ref<Texture2D>& texture);
 		static Texture2D CopyTexture2D(const Texture2D& texture);
 		static void DrawTexture2D(const Texture2D& src, Texture2D& dst);
+		static Texture2D ResizeTexture2D(const Texture2D& src, int width, int height);
 
 	private:
 		static void LoadData();

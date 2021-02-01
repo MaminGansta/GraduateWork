@@ -58,8 +58,7 @@ namespace gpu
 		inline MeanShift()
 		{
 			auto kernel_name = "MeanShift";
-			auto kernel_path = "C:/Users/lol/Desktop/projects/GraduateWork/graduate_work/resources/kernels/mean_shift.cl";
-            //auto kernel_path = "resources/kernels/test.cl";
+            auto kernel_path = "resources/kernels/meanshift.cl";
 
 			auto [kernel, context, device] = CreateKernel(kernel_path, kernel_name, DeviceType::GPU);
 			mKernel = kernel;
