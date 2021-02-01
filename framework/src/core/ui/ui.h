@@ -4,6 +4,7 @@
 #include "module/module.h"
 #include "imgui_controll/imgui_controll.h"
 
+#include <ranges>
 #include <algorithm>
 #include <functional>
 
@@ -24,7 +25,7 @@ namespace Bubble
 
 		template <typename T, typename ...Args>
 		static int AddModule(Args&& ...args);
-		static int AddModule(Ref<Module>&& ui_module);
+		static int AddModule(const Ref<Module>& ui_module);
 		static void RemoveModule(int module_id);
 		static void SetMenuBar(std::function<void()>&& draw_menubar);
 	};

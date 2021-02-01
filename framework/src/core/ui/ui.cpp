@@ -7,9 +7,13 @@ namespace Bubble
 	std::vector<Ref<Module>> UI::sModules;
 	std::function<void()> UI::sDrawMenuBar;
 
-	int UI::AddModule(Ref<Module>&& ui_module)
+	int UI::AddModule(const Ref<Module>& ui_module)
 	{
-		sModules.push_back(std::move(ui_module));
+		auto iterator = std::ranges::find(sModules, ui_module);
+		if (iterator == sModules.end())
+		{
+			sModules.push_back(ui_module);
+		}
 		return sModules.back()->GetID();
 	}
 
@@ -53,7 +57,7 @@ namespace Bubble
 			auto& ui_module = sModules[i];
 			if (!ui_module->IsOpen())
 			{
-				auto iterator = std::find(sModules.begin(), sModules.end(), ui_module);
+				auto iterator = std::ranges::find(sModules, ui_module);
 				sModules.erase(iterator);
 			}
 		}

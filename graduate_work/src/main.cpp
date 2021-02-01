@@ -3,6 +3,7 @@
 
 #include "gen_alg.h"
 #include "image_processing.h"
+#include "gpu/meanshift/meanshift_gpu.h"
 
 #include "main_window.h"
 #include "image_window.h"
@@ -11,21 +12,22 @@
 
 struct MyApplication : Application
 {
+	Ref<SelectibleImageWindow> selectible_window;
+
 	MyApplication()
 		: Application("Image segmentation")
 	{}
 
 	void OnCreate()
 	{
-		void meanshift_test();
+		void meanshift_test(const Ref<SelectibleImageWindow>&);
 		void gen_alg_test();
 
-		Ref<SelectibleImageWindow> selectible_window =
-			CreateRef<SelectibleImageWindow>(CreateRef<Texture2D>("resources/images/lenna.jpg"));
+		//Ref<Texture2D> image = CreateRef<Texture2D>("resources/images/lenna.jpg");
+		//UI::AddModule<MainWindow>(image);
 
-		UI::AddModule(selectible_window);
 		//gen_alg_test();
-		//meanshift_test();
+		meanshift_test(selectible_window);
 	}
 
 };
@@ -72,137 +74,70 @@ void gen_alg_test()
 
 std::vector<uint8_t> rand_color()
 {
+	RNG rng;
 	std::vector<uint8_t> res;
 
 	for (int i = 0; i < 4; i++)
-		res.push_back(std::rand() % 255);
+		res.push_back(rng.Get<uint8_t>());
 
 	res[3] = 255;
 	return res;
 }
 
 
-std::vector<Pixel> GetPixels(const cpu::Image& image)
-{
-	uint32_t image_size = image.GetHeight() * image.GetHeight();
-	std::vector<Pixel> pixels;
-	pixels.reserve(image_size);
 
-	for (int y = 0; y < image.GetHeight(); y++)
-	{
-		for (int x = 0; x < image.GetWidth(); x++)
-		{
-			Pixel pixel = {x, y};
-			const uint8_t* color = image.GetColor(x, y);
-			for (int i = 0; i < image.GetChannels(); i++)
-			{
-				pixel.color[i] = color[i];
-			}
-			pixels.push_back(pixel);
-		}
-	}
-
-	return std::move(pixels);
-}
-
-
-void meanshift_test()
+void meanshift_test(const Ref<SelectibleImageWindow>& selectible_window)
 {
 	cpu::Image input("resources/images/lenna.jpg");
 	gpu::Image src_image(input);
-	//gpu::Image dst_image(src_image.GetWidth() / 2, src_image.GetHeight() / 2);
 	gpu::Image dst_image(600, 480);
 
 	Renderer::DrawTexture2D(src_image, dst_image);
 	cpu::Image image(dst_image);
 
 	
-	cpu::Image image2(image.mSpecification);
-	std::vector<Pixel> pixels = GetPixels(image);
-	std::vector<Pixel> shifted(pixels.size());
-	std::vector<Pixel> shifted_debug(pixels.size());
-	
-	UI::AddModule<ImageWindow>(image.LoadOnGPU());
-	
 	// CPU
 	//auto clusters = MeanShift::Run(pixels, 10, 3);
 	
-	// OpenCL
-	// ==========================================================
-	// Algorithm params
-	float radius = 120.0f;
-	int iterations = 30;
+	MeanShitParams params;
+	params.Radius = 120.0f;
+	params.DistanceCoef = 3;
+	params.ColorCoef = 12;
+	params.BrightnessCoef = 1;
+	params.Iterations = 15;
+
+	gpu::MeanShift meanshift;
+	std::vector<std::vector<Pixel>> snapshots;
+
+    // OpenCL
+	auto clusters = meanshift.Run(image, params, &snapshots);
 	
-	auto kernel_name = "MeanShift";
-	//auto kernel_path = "resources/kernels/test.cl";
-	auto kernel_path = "C:/Users/lol/Desktop/projects/GraduateWork/graduate_work/resources/kernels/mean_shift.cl";
-	auto [kernel, context, device] = CreateKernel(kernel_path, kernel_name, DeviceType::GPU);
-	
-	cl_int err = 0;
-	uint32_t active_buffer_id = 0;
-	uint32_t sub_buffer_id = 1;
-	
-	cl::Buffer buffer1(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(Pixel) * pixels.size(), pixels.data(), &err);
-	cl::Buffer buffer2(context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY, sizeof(Pixel) * pixels.size(), nullptr, &err);
-	cl::Buffer buffers[2] = { buffer1, buffer2 };
-	
-	cl::CommandQueue queue(context, device);
-	
-	for (int i = 0; i < iterations; i++)
+	// Draw snapshots
+	for (const auto& snapshot : snapshots)
 	{
-		clcall(kernel.setArg(0, buffers[active_buffer_id]));
-		clcall(kernel.setArg(1, buffers[sub_buffer_id]));
-		clcall(kernel.setArg(2, (int)pixels.size()));
-		clcall(kernel.setArg(3, radius));
-	
-		int parts = ceil((float)pixels.size() / 400'000);
-		int step_size = pixels.size() / parts;
-		
-		for (int j = 0; j < parts; j++)
+		cpu::Image snapshot_image(image.mSpecification);
+		for (auto& pixel : snapshot)
 		{
-			clcall(queue.enqueueNDRangeKernel(kernel, cl::NDRange(step_size * j), cl::NDRange(pixels.size() / parts)));
+			uint8_t color[] = { pixel.color[0], pixel.color[1], pixel.color[2] };
+			snapshot_image.SetColor(color, pixel.x, pixel.y);
 		}
-		cl::finish();
-		std::swap(active_buffer_id, sub_buffer_id);
-	
-		//============== Snapshot for each step ============== 
-		clcall(queue.enqueueReadBuffer(buffers[active_buffer_id], GL_TRUE, 0, sizeof(Pixel) * pixels.size(), shifted.data()));
-		
-		cpu::Image image_temp(image.mSpecification);
-		for (auto& pixel : shifted)
-		{
-			uint8_t color[] = { pixel.color[0], pixel.color[1], pixel.color[2], 255 };
-			image_temp.SetColor(color, pixel.x, pixel.y);
-		}
-		UI::AddModule<ImageWindow>(image_temp.LoadOnGPU());
-		//===========================================
+		UI::AddModule<ImageWindow>(snapshot_image.LoadOnGPU());
 	}
 	
-	//clcall(queue.enqueueReadBuffer(buffers[active_buffer_id], GL_TRUE, 0, sizeof(Pixel) * pixels.size(), shifted.data(), &events));
-	//for (auto& pixel : shifted)
-	//{
-	//	uint8_t color[] = { pixel.color[0], pixel.color[1], pixel.color[2] };
-	//	image2.SetColor(color, pixel.x, pixel.y);
-	//}
-	//UI::AddModule<ImageWindow>(image2.LoadOnGPU());
-	
-	
-	auto clusters = MeanShift::CreateClusters(pixels, shifted, radius);
-	// ==========================================================
-	
-	std::vector<std::vector<uint8_t>> c;
-	srand(time(0));
-	
+
+	// Draw clusters
+	std::vector<std::vector<uint8_t>> colors;
 	for (int i = 0; i < clusters.size(); i++)
 	{
-		c.push_back(rand_color());
+		colors.push_back(rand_color());
 	}
 	
+    cpu::Image image2(image.mSpecification);
 	for (int i = 0; i < clusters.size(); i++)
 	{
 		for (Pixel& pixel : clusters[i])
 		{
-			auto color = c[i];
+			auto color = colors[i];
 			image2.SetColor(color.data(), pixel.x, pixel.y);
 		}
 	}

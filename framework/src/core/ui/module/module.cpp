@@ -7,7 +7,8 @@ namespace Bubble
 
 	Module::Module()
 		: mID(sGlobalID++),
-		  mIsOpen(true)
+		  mIsOpen(true),
+		  mWindowFlags(0)
 	{}
 
 }

@@ -11,6 +11,7 @@ namespace Bubble
 		static std::atomic<int> sGlobalID;
 
 	public:
+		int mWindowFlags;
 		bool mIsOpen;
 		int mID;
 

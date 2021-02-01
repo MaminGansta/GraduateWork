@@ -3,6 +3,7 @@
 #include "bubble.h"
 #include "imgui_toolkit.h"
 
+
 struct SelectibleImageWindow : Module
 {
 	Ref<Texture2D> mImage;
@@ -20,7 +21,7 @@ struct SelectibleImageWindow : Module
 
 	void Draw(DeltaTime dt)
 	{
-		std::string name = "Select area " + std::to_string(mImage->mRendererID);
+		std::string name = "Selectable area";
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		ImGui::Begin(name.c_str(), &mIsOpen);
 		{

@@ -26,7 +26,8 @@ namespace gpu
 
 	Texture2D ApplyKernel(const Kernel& kernel, const Texture2D& image, Framebuffer&& fb)
 	{
-		if (image.GetWidth() != fb.GetWidth() || image.GetHeight() != fb.GetHeight())
+		if (image.GetWidth() != fb.GetWidth() ||
+			image.GetHeight() != fb.GetHeight())
 		{
 			fb.Resize(image.GetWidth(), image.GetHeight());
 		}
