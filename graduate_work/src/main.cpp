@@ -22,9 +22,12 @@ struct MyApplication : Application
 	{
 		void meanshift_test(const Ref<SelectibleImageWindow>&);
 		void gen_alg_test();
+		
+
+		UI::AddModule<MainWindow>();
 
 		//gen_alg_test();
-		meanshift_test(selectible_window);
+		//meanshift_test(selectible_window);
 	}
 
 };
@@ -39,11 +42,17 @@ Application* CreateApplication()
 
 struct MeanShiftBreed
 {
+	Ref<cpu::Image> mImage;
 	Ref<RNG> mRNG = CreateRef<RNG>();
-	uint8_t mGens[10] = {0};
+	uint32_t mGens[4] = {0};
+
+	MeanShiftBreed(const Ref<cpu::Image>& image)
+		: mImage(image)
+	{}
 
 	static inline float GetTargetValue(MeanShiftBreed entity)
 	{
+
 		return 0.0f;
 	}
 
@@ -58,11 +67,11 @@ struct MeanShiftBreed
 	}
 };
 
-void gen_alg_test()
-{
-	std::vector<MeanShiftBreed> a(5);
-	GeneticAlgorithm(a, 10);
-}
+//void gen_alg_test()
+//{
+//	std::vector<MeanShiftBreed> a(5);
+//	GeneticAlgorithm(a, 10);
+//}
 
 
 
@@ -70,19 +79,19 @@ void gen_alg_test()
 
 void meanshift_test(const Ref<SelectibleImageWindow>& selectible_window)
 {
-	cpu::Image input("resources/images/car6.jpg");
+	cpu::Image input("resources/images/car1.jpg");
 	cpu::Image image(Renderer::ResizeTexture2D(input, 400, 320));
 
-	UI::AddModule<MainWindow>(CreateRef<gpu::Image>(image.LoadOnGPU()));
+	
 
 	// CPU
 	//auto clusters = MeanShift::Run(pixels, 10, 3);
 	
 	MeanShitParams params;
-	params.Radius = 103;
-	params.DistanceCoef = 5;
-	params.ColorCoef = 8;
-	params.BrightnessCoef = 1;
+	params.Radius = 131;
+	params.DistanceCoef = 12;
+	params.ColorCoef = 4;
+	params.BrightnessCoef = 12;
 	params.Iterations = 16;
 
 	std::vector<std::vector<Pixel>> snapshots;

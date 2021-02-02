@@ -5,6 +5,7 @@
 #include "selectible_image_window.h"
 
 #include "tools.h"
+#include "file_dialog.h"
 
 
 struct MainWindow : Module
@@ -12,10 +13,7 @@ struct MainWindow : Module
 	Ref<Texture2D> mImage;
 	Ref<SelectibleImageWindow> mSelectibleImageWindow;
 
-	// Temp
-	MainWindow(const Ref<Texture2D>& image)
-		: mImage(image),
-		  mSelectibleImageWindow(CreateRef<SelectibleImageWindow>(image))
+	MainWindow()
 	{
 		mWindowFlags |= ImGuiWindowFlags_NoCollapse;
 	}
@@ -26,25 +24,31 @@ struct MainWindow : Module
 		{
 			if (ImGui::Button("Stage 1: Choose image", { 200, 50 }))
 			{
-
+				try {
+                    auto image_path = OpenFileDialog("jpg,png");
+					mImage = CreateRef<Texture2D>(cpu::Image(image_path));
+					mSelectibleImageWindow = CreateRef<SelectibleImageWindow>(mImage);
+				}
+				catch (std::exception& e) {
+					LOG_WARN(e.what());
+				}
 			}
 			
 			if (mImage)
 			{
 				ImGui::SameLine(0.0f, 20.0f);
 				ImGui::Image((ImTextureID)mImage->GetRendererID(), { 100.0f, 100.0f });
+
+				ImGui::Dummy(ImVec2(0.0f, 5.0f));
+				if (ImGui::Button("Stage 2: Select area", { 200, 50 }))
+				{
+					mSelectibleImageWindow->mIsOpen = true;
+					UI::AddModule(mSelectibleImageWindow);
+				}
+
+
+
 			}
-
-			ImGui::Dummy(ImVec2(0.0f, 5.0f));
-			if (ImGui::Button("Stage 2: Select area", { 200, 50 }))
-			{
-				mSelectibleImageWindow->mIsOpen = true;
-				mSelectibleImageWindow->mImage = mImage;
-				UI::AddModule(mSelectibleImageWindow);
-			}
-
-
-
 		}
 		ImGui::End();
 	}

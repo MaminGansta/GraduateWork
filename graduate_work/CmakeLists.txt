@@ -17,6 +17,7 @@ set_target_properties(
 
 # Gpu proccessing framework
 target_link_libraries(GraduateWork Framework)
+target_link_libraries(GraduateWork nativefiledialog)
 add_dll(GraduateWork)
 
 find_package(OpenMP)
@@ -38,9 +39,6 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src/image_processing/convolution
     ${CMAKE_CURRENT_SOURCE_DIR}/src/image_processing/convolution/kernel
     ${CMAKE_CURRENT_SOURCE_DIR}/src/image_processing/convolution/filters
-
-
-
 )
 
 # Resources
