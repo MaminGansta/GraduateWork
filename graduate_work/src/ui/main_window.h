@@ -8,7 +8,7 @@
 
 #include "file_dialog.h"
 #include "image_processing.h"
-
+#include "bread.h"
 
 struct MainWindow : Module
 {
@@ -51,31 +51,31 @@ struct MainWindow : Module
                 ImGui::Dummy(ImVec2(0.0f, 5.0f));
                 if (ImGui::Button("Stage 3: Run", { 200, 50 }))
                 {
-					MeanShitParams params;
-					params.Radius = 110;
-					params.DistanceCoef = 12;
-					params.ColorCoef = 4;
-					params.BrightnessCoef = 12;
-					params.Iterations = 16;
+					//MeanShitParams params;
+					//params.Radius = 110;
+					//params.DistanceCoef = 12;
+					//params.ColorCoef = 4;
+					//params.BrightnessCoef = 12;
+					//params.Iterations = 16;
 					
 					// OpenCL
-					gpu::MeanShift meanshift;
-					std::vector<std::vector<Pixel>> snapshots;
-
-					auto clusters = meanshift.Run(*mImage, params, &snapshots);
-
-					// Draw snapshots
-					UI::AddModule<ImageGralleryWindow>(GetRefImagesFromPixelData(snapshots, mImage->mSpecification));
-					
-					// Draw clusters
-					UI::AddModule<ImageWindow>(GetImageFromClusters(clusters, mImage->mSpecification));
-					float radius = mSelectibleImageWindow->mRadius * mImage->GetWidth();
-					ImVec2 center = mSelectibleImageWindow->mCircleCenter;
-					center.x = floor(center.x * mImage->GetWidth());
-					center.y = floor(center.y * mImage->GetHeight());
-					
-					int evaluation = MeanshiftEvaluation(clusters, center, radius);
-					LOG_INFO("Evalueation: {}", evaluation);
+					//gpu::MeanShift meanshift;
+					//std::vector<std::vector<Pixel>> snapshots;
+					//
+					//auto clusters = meanshift.Run(*mImage, params, &snapshots);
+					//
+					//// Draw snapshots
+					//UI::AddModule<ImageGralleryWindow>(GetRefImagesFromPixelData(snapshots, mImage->mSpecification));
+					//
+					//// Draw clusters
+					//UI::AddModule<ImageWindow>(GetImageFromClusters(clusters, mImage->mSpecification));
+					//float radius = mSelectibleImageWindow->mRadius * mImage->GetWidth();
+					//ImVec2 center = mSelectibleImageWindow->mCircleCenter;
+					//center.x = floor(center.x * mImage->GetWidth());
+					//center.y = floor(center.y * mImage->GetHeight());
+					//
+					//int evaluation = MeanshiftEvaluation(clusters, center, radius);
+					//LOG_INFO("Evalueation: {}", evaluation);
                 }
 
 			}
