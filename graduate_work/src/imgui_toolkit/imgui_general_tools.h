@@ -5,6 +5,13 @@
 
 namespace ImGuiTK
 {
+    glm::vec2& VecC(const ImVec2& vec) { return *(glm::vec2*)&vec; }
+    ImVec2& VecC(const glm::vec2& vec) { return *(ImVec2*)&vec; }
+
+    glm::vec4& VecC(const ImVec4& vec) { return *(glm::vec4*)&vec; }
+    ImVec4& VecC(const glm::vec4& vec) { return *(ImVec4*)&vec; }
+
+
 	// Possible to be outside
 	// Use GetMousePosInRect() to get mouse in workable area
 	inline ImVec2 GetMousePos()

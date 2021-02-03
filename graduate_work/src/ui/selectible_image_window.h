@@ -7,8 +7,8 @@
 struct SelectibleImageWindow : Module
 {
 	Ref<Texture2D> mImage;
-	ImVec2 mPointInClass = {0.5f, 0.5f};
-	ImVec2 mCircleCenter = {0.5f, 0.5f};
+    ImVec2 mPointInClass = { 0.5f, 0.5f };
+    ImVec2 mCircleCenter = { 0.5f, 0.5f };
 	float mRadius = 0.1f;
 
 	SelectibleImageWindow(const Ref<Texture2D>& image)

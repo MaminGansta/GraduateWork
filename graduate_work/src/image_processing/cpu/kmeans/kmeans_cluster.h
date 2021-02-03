@@ -3,7 +3,7 @@
 #include <vector>
 
 template <typename Point>
-struct Cluster
+struct KMeansCluster
 {
 	Point mCenter;
 	std::vector<Point> mPoints;

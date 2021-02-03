@@ -1,7 +1,6 @@
 
 #include "image_cpu.h"
 
-
 namespace cpu
 {
 	Image::Image(const std::string& path)

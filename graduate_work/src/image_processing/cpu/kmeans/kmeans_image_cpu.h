@@ -13,7 +13,7 @@ using PixelDistaceRate = std::function<float(const Pixel&, const Pixel&)>;
 namespace cpu
 {
 	static void Init(const cpu::Image& image,
-					 std::vector<Cluster<Pixel>>& clusters,
+					 std::vector<KMeansCluster<Pixel>>& clusters,
 					 int clusters_num);
 
 	static void SplitPointsbyClusters(const cpu::Image& image,
@@ -21,7 +21,7 @@ namespace cpu
 									  const PixelDistaceRate& distance_rate);
 
 	static bool ComputeMeansAndMove(const Image& image,
-									std::vector<Cluster<Pixel>>& clusters,
+									std::vector<KMeansCluster<Pixel>>& clusters,
 									const PixelDistaceRate& distance_rate);
 
 	static int GetImageSize(const Image& image);
@@ -30,13 +30,13 @@ namespace cpu
 
 	// ================ Image kmeans ================ 
 
-	inline std::vector<Cluster<Pixel>>
+	inline std::vector<KMeansCluster<Pixel>>
 		ImageKMeans(const cpu::Image& image,
 			const PixelDistaceRate& distance_rate,
 			int clusters_num,
 			int max_iterations)
 	{
-		std::vector<Cluster<Pixel>> clusters;
+		std::vector<KMeansCluster<Pixel>> clusters;
 		Init(image, clusters, clusters_num);
 
 		for (int i = 0; i < max_iterations; i++)
@@ -59,7 +59,7 @@ namespace cpu
 	}
 
 
-	static void Init(const cpu::Image& image, std::vector<Cluster<Pixel>>& clusters, int clusters_num)
+	static void Init(const cpu::Image& image, std::vector<KMeansCluster<Pixel>>& clusters, int clusters_num)
 	{
 		clusters.resize(clusters_num);
 
@@ -87,13 +87,13 @@ namespace cpu
 	}
 
 	static void SplitPointsbyClusters(const cpu::Image& image,
-									  std::vector<Cluster<Pixel>>& clusters,
+									  std::vector<KMeansCluster<Pixel>>& clusters,
 									  const PixelDistaceRate& distance_rate)
 	{
 		for (int i = 0; i < GetImageSize(image); i++)
 		{
 			Pixel pixel = GetImagePixel(image, i);
-			Cluster<Pixel>* nearest_cluster;
+			KMeansCluster<Pixel>* nearest_cluster;
 			float min_distance = std::numeric_limits<float>::max();
 
 			for (auto& cluster : clusters)
@@ -110,7 +110,7 @@ namespace cpu
 	}
 
 	static bool ComputeMeansAndMove(const Image& image,
-									std::vector<Cluster<Pixel>>& clusters,
+									std::vector<KMeansCluster<Pixel>>& clusters,
 								    const PixelDistaceRate& distance_rate)
 	{
 		bool end = false;

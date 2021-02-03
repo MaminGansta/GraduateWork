@@ -1,32 +1,8 @@
 #pragma once
 
 #include "bubble.h"
-#include "image_processing.h"
-
-
-std::vector<Pixel> GetPixels(const cpu::Image& image)
-{
-	uint32_t image_size = image.GetHeight() * image.GetHeight();
-	std::vector<Pixel> pixels;
-	pixels.reserve(image_size);
-
-	for (int y = 0; y < image.GetHeight(); y++)
-	{
-		for (int x = 0; x < image.GetWidth(); x++)
-		{
-			Pixel pixel = { x, y };
-			const uint8_t* color = image.GetColor(x, y);
-			for (int i = 0; i < image.GetChannels(); i++)
-			{
-				pixel.color[i] = color[i];
-			}
-			pixels.push_back(pixel);
-		}
-	}
-
-	return std::move(pixels);
-}
-
+#include "tools.h"
+#include "cpu/meanshift/meanshift_cpu.h"
 
 struct MeanShitParams
 {
@@ -36,8 +12,6 @@ struct MeanShitParams
 	int ColorCoef = 0;
 	int BrightnessCoef = 0;
 };
-
-
 
 namespace gpu
 {
@@ -64,7 +38,6 @@ namespace gpu
 			mKernel = kernel;
 			mContext = context;
 			mDevice = device;
-
 			mQueue = cl::CommandQueue(mContext, mDevice);
 		}
 
