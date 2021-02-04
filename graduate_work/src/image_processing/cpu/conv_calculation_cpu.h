@@ -2,7 +2,7 @@
 
 #include "bubble.h"
 #include "kernel.h"
-#include "cpu/image/image_cpu.h"
+#include "cpu/image_cpu.h"
 
 
 namespace cpu

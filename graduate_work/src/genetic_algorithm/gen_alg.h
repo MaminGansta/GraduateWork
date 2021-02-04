@@ -2,27 +2,26 @@
 
 #include <cstdint>
 #include <vector>
-#include <random>
-#include "RNG.h"
+#include "random.hpp"
+using Random = effolkronium::random_static;
 
 template <typename T>
-concept HasTargetFunction = requires(const T& arg) { { T::GetTargetValue(arg) } -> std::convertible_to<float>; };
+concept HasTargetFunction = requires(T t) { { t.GetTargetValue() } -> std::convertible_to<float>; };
 
 template <typename T>
-concept HasCrossoverFunction = requires(const T& f, const T& s) { { T::Crossover(f, s) } -> std::convertible_to<T>; };
+concept HasCrossoverFunction = requires(T f, const T& s) { { f.Crossover(s) } -> std::convertible_to<T>; };
 
 template <typename T>
-concept HasMutationFunction = requires(T& f) { { T::Mutation(f) } -> std::convertible_to<T>; };
+concept HasMutationFunction = requires(T t) { { t.Mutation() }; };
 
 template <typename T>
-concept ValidBreed = HasTargetFunction<T> && HasCrossoverFunction<T> && HasMutationFunction<T>;
+concept ValidBreed = HasTargetFunction<T>;//&& HasCrossoverFunction<T>&& HasMutationFunction<T>;
 
 
 
 template <ValidBreed Breed>
-static auto MakeStep(const std::vector<Breed>& current_generation) -> std::vector<Breed>
+static auto MakeStep(std::vector<Breed>& current_generation) -> std::vector<Breed>
 {
-	RNG random;
 	std::vector<Breed> parents;
 	std::vector<Breed> new_generation;
 
@@ -33,15 +32,22 @@ static auto MakeStep(const std::vector<Breed>& current_generation) -> std::vecto
 	std::vector<float> fitnes_coeffs(current_generation.size(), 0.0f);
 	float fitnes_total = 0.0f;
 	float fitnes_avg = 0.0f;
+	float min = 0;
 
 	// Calculate target values and total
 	for (int i = 0; i < current_generation.size(); i++)
 	{
-		fitnes_values[i] = Breed::GetTargetValue(current_generation[i]);
+		fitnes_values[i] = current_generation[i].GetTargetValue();
+        min = std::min(fitnes_values[i], min);
+	}
+
+	for (int i = 0; i < current_generation.size(); i++)
+	{
+		fitnes_values[i] -= min;
 		fitnes_total += fitnes_values[i];
 	}
-	fitnes_avg = fitnes_total / current_generation.size();
-	
+    fitnes_avg = fitnes_total / current_generation.size();
+
 	// Calculate relative target coefficients
 	for (int i = 0; i < current_generation.size(); i++)
 	{
@@ -67,7 +73,7 @@ static auto MakeStep(const std::vector<Breed>& current_generation) -> std::vecto
 	{
 		for (int i = 0; i < current_generation.size(); i++)
 		{
-			if (fitnes_values[i] >= random.Get(0.0f, fitnes_avg))
+			if (fitnes_values[i] >= Random::get(0.0f, fitnes_avg))
 			{
 				parents.push_back(current_generation[i]);
 			}
@@ -94,18 +100,17 @@ static auto MakeStep(const std::vector<Breed>& current_generation) -> std::vecto
 	// Make child from two parents
 	for (int i = 0; i < current_generation.size() - 1; i++)
 	{
-		int first_parent_id  = random.Get<uint32_t>(0, current_generation.size());
-		int second_parent_id = random.Get<uint32_t>(0, current_generation.size());
+		int first_parent_id  = Random::get<uint32_t>(0, current_generation.size() - 1);
+		int second_parent_id = Random::get<uint32_t>(0, current_generation.size() - 1);
 		while (first_parent_id == second_parent_id)
 		{
-			second_parent_id = random.Get<uint32_t>(0, current_generation.size());
+			second_parent_id = Random::get<uint32_t>(0, current_generation.size() - 1);
 		}
-		Breed child;
-		child = Breed::Crossover(parents[first_parent_id], parents[second_parent_id]);
-		child = Breed::Mutation(child);
+		Breed child = parents[first_parent_id];
+		child = parents[first_parent_id].Crossover(parents[second_parent_id]);
+		child.Mutation();
 		new_generation.push_back(child);
 	}
-
 	return new_generation;
 }
 
@@ -117,6 +122,7 @@ auto GeneticAlgorithm(std::vector<Breed> population, int steps) -> std::vector<s
 
 	for (int generation = 0; generation < steps; generation++)
 	{
+		LOG_INFO("Iteration: {}", generation);
 		trace.push_back(MakeStep(population));
 	}
 	return trace;

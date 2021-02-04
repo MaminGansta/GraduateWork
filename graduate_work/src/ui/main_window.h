@@ -9,6 +9,7 @@
 #include "file_dialog.h"
 #include "image_processing.h"
 #include "bread.h"
+#include "gen_alg.h"
 
 struct MainWindow : Module
 {
@@ -51,31 +52,41 @@ struct MainWindow : Module
                 ImGui::Dummy(ImVec2(0.0f, 5.0f));
                 if (ImGui::Button("Stage 3: Run", { 200, 50 }))
                 {
-					//MeanShitParams params;
-					//params.Radius = 110;
-					//params.DistanceCoef = 12;
-					//params.ColorCoef = 4;
-					//params.BrightnessCoef = 12;
-					//params.Iterations = 16;
+					Ref<gpu::MeanShift> meanshift = CreateRef<gpu::MeanShift>();
+					Ref<std::vector<Pixel>> pixels = CreateRef<std::vector<Pixel>>(GetPixels(*mImage));
+
+                    float radius = mSelectibleImageWindow->mRadius * mImage->GetWidth();
+                    ImVec2 center = mSelectibleImageWindow->mCircleCenter;
+                    center.x = floor(center.x * mImage->GetWidth());
+                    center.y = floor(center.y * mImage->GetHeight());
+
+					std::vector<MeanShiftBreed> population;
+					for (int i = 0; i < 5; i++)
+					{
+						MeanShiftBreed bread(pixels, meanshift, center, radius);
+						bread.ClipValues();
+						population.push_back(bread);
+					}
+
+					auto result = GeneticAlgorithm(population, 6);
+
+					// Print result
+					std::vector<std::vector<Pixel>> snapshots;
+                    MeanShitParams params = ExtractParams(result.back()[0].mGens);
+
+					LOG_INFO("Params:\n radius {}\n distance coef{}\n color coef{}\n brightness coef{}",
+								params.Radius, params.DistanceCoef, params.ColorCoef, params.BrightnessCoef);
+
+					auto clusters = meanshift->Run(*pixels, params, &snapshots);
 					
-					// OpenCL
-					//gpu::MeanShift meanshift;
-					//std::vector<std::vector<Pixel>> snapshots;
-					//
-					//auto clusters = meanshift.Run(*mImage, params, &snapshots);
-					//
-					//// Draw snapshots
-					//UI::AddModule<ImageGralleryWindow>(GetRefImagesFromPixelData(snapshots, mImage->mSpecification));
-					//
-					//// Draw clusters
-					//UI::AddModule<ImageWindow>(GetImageFromClusters(clusters, mImage->mSpecification));
-					//float radius = mSelectibleImageWindow->mRadius * mImage->GetWidth();
-					//ImVec2 center = mSelectibleImageWindow->mCircleCenter;
-					//center.x = floor(center.x * mImage->GetWidth());
-					//center.y = floor(center.y * mImage->GetHeight());
-					//
-					//int evaluation = MeanshiftEvaluation(clusters, center, radius);
-					//LOG_INFO("Evalueation: {}", evaluation);
+					// Draw snapshots
+					UI::AddModule<ImageGralleryWindow>(GetRefImagesFromPixelData(snapshots, mImage->mSpecification));
+					
+					// Draw clusters
+					UI::AddModule<ImageWindow>(GetImageFromClusters(clusters, mImage->mSpecification));
+					
+					int evaluation = MeanshiftEvaluation(clusters, center, radius);
+					LOG_INFO("Evalueation: {}", evaluation);
                 }
 
 			}

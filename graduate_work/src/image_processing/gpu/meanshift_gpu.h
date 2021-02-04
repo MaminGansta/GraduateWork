@@ -2,7 +2,7 @@
 
 #include "bubble.h"
 #include "tools.h"
-#include "cpu/meanshift/meanshift_cpu.h"
+#include "cpu/meanshift_cpu.h"
 
 struct MeanShitParams
 {
@@ -33,7 +33,6 @@ namespace gpu
 		{
 			auto kernel_name = "MeanShift";
             auto kernel_path = "resources/kernels/meanshift.cl";
-
 			auto [kernel, context, device] = CreateKernel(kernel_path, kernel_name, DeviceType::GPU);
 			mKernel = kernel;
 			mContext = context;
@@ -41,11 +40,10 @@ namespace gpu
 			mQueue = cl::CommandQueue(mContext, mDevice);
 		}
 
-		inline std::vector<Cluster<Pixel>> Run(const cpu::Image& image,
+		inline std::vector<Cluster<Pixel>> Run(std::vector<Pixel>& pixels,
 											   MeanShitParams params, 
 											   std::vector<std::vector<Pixel>>* snapshots = nullptr)
 		{
-			std::vector<Pixel> pixels = GetPixels(image);
 			std::vector<Pixel> shifted(pixels.size());
 			if (snapshots)
 			{

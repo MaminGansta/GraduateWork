@@ -1,8 +1,8 @@
 #pragma once
 
 #include "bubble.h"
-#include "kernel.h"
-#include "gpu/image/image_gpu.h"
+#include "convolution/kernel.h"
+#include "gpu/image_gpu.h"
 
 namespace gpu
 {

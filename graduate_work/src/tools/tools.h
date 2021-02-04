@@ -3,17 +3,18 @@
 #include "bubble.h"
 #include "pixel.h"
 #include "cluster.h"
-#include "cpu/image/image_cpu.h"
-#include "gpu/image/image_gpu.h"
+#include "cpu/image_cpu.h"
+#include "gpu/image_gpu.h"
+#include "random.hpp"
+using Random = effolkronium::random_static;
 
 
 glm::i8vec4 RandomColor()
 {
-    RNG rng;
     glm::i8vec4 res(4);
     for (int i = 0; i < 3; i++)
     {
-        res[i] = rng.Get<uint8_t>();
+        res[i] = Random::get<uint8_t>(0, 255);
     }
     res[3] = 255;
     return res;
