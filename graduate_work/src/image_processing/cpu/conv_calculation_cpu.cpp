@@ -1,7 +1,6 @@
 
 #include "conv_calculation_cpu.h"
 
-
 namespace cpu
 {
 	Image ApplyKernel(const Kernel& kernel, const Image& src)

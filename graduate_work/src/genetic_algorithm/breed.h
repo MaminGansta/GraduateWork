@@ -10,8 +10,7 @@
 using Random = effolkronium::random_static;
 
 
-
-#define MEANSHIFT_ITERATIONS 16
+#define MEANSHIFT_ITERATIONS 20
 
 inline MeanShitParams ExtractParams(const std::bitset<32>& bits)
 {
@@ -35,13 +34,13 @@ struct MeanShiftBreed
     Ref<std::vector<Pixel>> mPixels;
     Ref<gpu::MeanShift> mMeanShift;
     ImVec2 mCenter;
-    float mRadius;
+    float  mRadius;
     std::bitset<32> mGens;
 
     MeanShiftBreed(const Ref<std::vector<Pixel>>& pixels, 
                    const Ref<gpu::MeanShift>& meanshift,
                    ImVec2 center,
-                   float radius)
+                   float  radius)
         : mPixels(pixels),
           mMeanShift(meanshift),
           mCenter(center),
@@ -51,11 +50,12 @@ struct MeanShiftBreed
         {
             mGens.set(i, Random::get<int>(0, 1));
         }
+        ClipValues();
     }
 
     inline float GetTargetValue()
     {
-        auto params = ExtractParams(mGens);
+        auto params   = ExtractParams(mGens);
         auto clusters = mMeanShift->Run(*mPixels, params);
         return MeanshiftEvaluation(clusters, mCenter, mRadius);
     }
@@ -87,7 +87,7 @@ struct MeanShiftBreed
         // Mutation
         for (int i = 0; i < mGens.size(); i++)
         {
-            if (Random::get<float>(0.0f, 1.0f) < 0.1f)
+            if (Random::get<float>(0.0f, 1.0f) < 0.3f)
             {
                 mGens.flip(i);
             }
@@ -103,11 +103,11 @@ struct MeanShiftBreed
         {
             data[i] = ((uint8_t*)&mGens + i);
         }
-        *data[0] |= 0b00111111; // Min value of radius is 63
-        *data[1] &= 0b00011111;
-        *data[2] &= 0b00011111; // Max value of coefficient is 31
-        *data[3] &= 0b00011111;
+        *data[0] |= 0b01011000; // Min value of radius is 64
+        *data[0] &= 0b01111111;
+        *data[1] &= 0b00001111;
+        *data[2] &= 0b00001111; // Max value of coefficient is 31
+        *data[3] &= 0b00000011;
     }
-
 
 };

@@ -16,7 +16,7 @@ struct ImageWindow : Module
 
 	void Draw(DeltaTime dt)
 	{
-		std::string name = "Image " + std::to_string(mImage->mRendererID);
+		std::string name = "Image ";// +std::to_string(mImage->mRendererID);
 		
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		ImGui::Begin(name.c_str(), &mIsOpen);

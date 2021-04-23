@@ -8,6 +8,7 @@
 #include "cpu/image_cpu.h"
 #include "cpu/meanshift_cpu.h"
 #include "cpu/conv_calculation_cpu.h"
+#include "cpu/auto_contrast_cpu.h"
 
 #include "gpu/image_gpu.h"
 #include "gpu/meanshift_gpu.h"

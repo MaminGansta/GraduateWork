@@ -65,6 +65,22 @@ namespace cpu
 		return color;
 	}
 
+    const uint8_t* Image::GetColor(uint32_t i) const
+    {
+		i *= GetChannels();
+        uint8_t* data = GetData();
+        uint8_t* color = &data[i];
+        return color;
+    }
+
+    uint8_t* Image::GetColor(uint32_t i)
+    {
+		i *= GetChannels();
+        uint8_t* data = GetData();
+        uint8_t* color = &data[i];
+        return color;
+    }
+
 	void Image::SetColor(const uint8_t* color, uint32_t x, uint32_t y)
 	{
 		y *= GetChannels();
@@ -72,6 +88,13 @@ namespace cpu
 		uint8_t* data = GetData();
 		memmove(&data[y * GetWidth() + x], color, GetChannels());
 	}
+    
+	void Image::SetColor(const uint8_t* color, uint32_t i)
+    {
+		i *= GetChannels();
+        uint8_t* data = GetData();
+        memmove(&data[i], color, GetChannels());
+    }
 
 	Texture2D Image::LoadOnGPU() const
 	{

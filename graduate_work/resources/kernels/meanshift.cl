@@ -37,7 +37,7 @@ __kernel void MeanShift(__global float8* input,
 	float8 active_pixel = input[get_global_id(0)];
 	float8 mean_pixel = (float8)(0, 0, 0, 0, 0, 0, 0, 0);
 	float total = 0;
-	
+
 	for (int i = 0; i < buffer_size; i++)
 	{
 		float8 pixel = input[i];
