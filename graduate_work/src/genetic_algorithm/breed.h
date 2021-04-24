@@ -10,7 +10,7 @@
 using Random = effolkronium::random_static;
 
 
-#define MEANSHIFT_ITERATIONS 20
+#define MEANSHIFT_ITERATIONS 5
 
 inline MeanShitParams ExtractParams(const std::bitset<32>& bits)
 {
@@ -57,7 +57,7 @@ struct MeanShiftBreed
     {
         auto params   = ExtractParams(mGens);
         auto clusters = mMeanShift->Run(*mPixels, params);
-        return MeanshiftEvaluation(clusters, mCenter, mRadius);
+        return CalculateTargetValue(clusters, mCenter, mRadius);
     }
 
     inline MeanShiftBreed Crossover(MeanShiftBreed& other)
@@ -103,10 +103,9 @@ struct MeanShiftBreed
         {
             data[i] = ((uint8_t*)&mGens + i);
         }
-        *data[0] |= 0b01011000; // Min value of radius is 64
-        *data[0] &= 0b01111111;
-        *data[1] &= 0b00001111;
-        *data[2] &= 0b00001111; // Max value of coefficient is 31
+        *data[0] |= 0b01100000; // Min value of radius is 96
+        *data[1] &= 0b00111111;
+        *data[2] &= 0b00111111; // Max value of coefficient is 31
         *data[3] &= 0b00000011;
     }
 

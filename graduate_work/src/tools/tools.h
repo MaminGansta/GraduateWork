@@ -72,24 +72,26 @@ inline gpu::Image GetImageFromClusters(const std::vector<Cluster<Pixel>>& cluste
             image.SetColor((uint8_t*)&color, pixel.x, pixel.y);
         }
     }
-    assert(sum == spec.Width * spec.Height);
+    BUBBLE_ASSERT(sum == spec.Width * spec.Height, "");
     return image.LoadOnGPU();
 }
 
-inline int GetClusterByPixel(const std::vector<Cluster<Pixel>>& clusters, Pixel pixel)
+template <typename Point>
+inline int GetClusterByPixel(const std::vector<Cluster<Pixel>>& clusters, Point point)
 {
     for (int i = 0; i < clusters.size(); i++)
     {
         for (const Pixel& pixel_in_cluster : clusters[i])
         {
-            if (pixel.x == pixel_in_cluster.x &&
-                pixel.y == pixel_in_cluster.y)
+            if (point.x == pixel_in_cluster.x &&
+                point.y == pixel_in_cluster.y)
             {
                 return i;
             }
         }
     }
-    assert(false);
+    BUBBLE_ASSERT(false, "Ti shto durak bliat");
+    return -1;
 }
 
 inline gpu::Image GetImageFromCluster(const Cluster<Pixel>& cluster, Texture2DSpecification spec)
@@ -125,26 +127,7 @@ inline std::vector<Ref<gpu::Image>> GetRefImagesFromPixelData(const std::vector<
 }
 
 
-// ================= Meanshift evaluation =================
-
-inline int GetClusterIDByPixel(const std::vector<Cluster<Pixel>>& clusters, ImVec2 pixel)
-{
-    int cluster_id = -1;
-    for (const auto& cluster : clusters)
-    {
-        cluster_id++;
-        for (const Pixel& image_pixel : cluster)
-        {
-            if (image_pixel.x == pixel.x &&
-                image_pixel.y == pixel.y)
-            {
-                return cluster_id;
-            }
-        }
-    }
-    BUBBLE_ASSERT(false, "Ti shto durak bliat");
-    return 0;
-}
+// ================= Target value =================
 
 int Metric(const Pixel& pixel, ImVec2 center, float radius)
 {
@@ -152,10 +135,9 @@ int Metric(const Pixel& pixel, ImVec2 center, float radius)
     return distance <= radius ? 1 : -(distance - radius) / (radius / 10);
 }
 
-
-inline int MeanshiftEvaluation(const std::vector<Cluster<Pixel>>& clusters, ImVec2 center, float radius)
+inline int CalculateTargetValue(const std::vector<Cluster<Pixel>>& clusters, ImVec2 center, float radius)
 {
-    int cluster_id = GetClusterIDByPixel(clusters, center);
+    int cluster_id = GetClusterByPixel(clusters, center);
 
     int result = 0;
     for (const Pixel& pixel : clusters[cluster_id])

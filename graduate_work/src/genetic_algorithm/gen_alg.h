@@ -28,6 +28,8 @@ static auto MakeStep(std::vector<Breed>& current_generation) -> std::vector<Bree
 	/*
 		Step 1 - Calculate target values
 	*/
+	LOG_INFO("1-- start calc targer val");
+
 	std::vector<float> fitnes_values(current_generation.size(), 0.0f);
 	std::vector<float> fitnes_coeffs(current_generation.size(), 0.0f);
 	float fitnes_total = 0.0f;
@@ -54,9 +56,13 @@ static auto MakeStep(std::vector<Breed>& current_generation) -> std::vector<Bree
 		fitnes_coeffs[i] = fitnes_values[i] / fitnes_avg;
 	}
 	
+    LOG_INFO("1-- end calc targer val");
+
 	/*
 		Step 2 - Choose parents
 	*/
+    LOG_INFO("2-- start chose parents");
+
 	// Take strongest parents
 	for (int i = 0; i < current_generation.size(); i++)
 	{
@@ -79,10 +85,14 @@ static auto MakeStep(std::vector<Breed>& current_generation) -> std::vector<Bree
 			}
 		}
 	}
+
+    LOG_INFO("2-- end chose parents");
 	
 	/*
 		Step 3 - Create new generation
 	*/
+    LOG_INFO("3-- start make childs");
+
 	// Move beast entity to the next generation (Helps to avoid degradation)
 	int index = 0;
 	float max = fitnes_values[0];
@@ -111,6 +121,9 @@ static auto MakeStep(std::vector<Breed>& current_generation) -> std::vector<Bree
 		child.Mutation();
 		new_generation.push_back(child);
 	}
+	
+	LOG_INFO("3-- end make childs");
+
 	return new_generation;
 }
 

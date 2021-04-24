@@ -46,7 +46,9 @@ double RateDitailsOnImage(const cpu::Image& image)
 struct MainWindow : Module
 {
 	Ref<Texture2D> mImage;
+	Ref<std::vector<Pixel>> mPixels;
 	Ref<SelectibleImageWindow> mSelectibleImageWindow;
+	Ref<gpu::MeanShift> mMeanShift = CreateRef<gpu::MeanShift>();
 
 	MainWindow()
 	{
@@ -57,6 +59,7 @@ struct MainWindow : Module
 	{
         ImGui::Begin("Main window", NULL, mWindowFlags);
         {
+			ImGui::BeginChild("Steps", ImVec2(200, 200));
 
 			if (ImGui::Button("Stage 1: Choose image", { 200, 50 }))
 			{
@@ -64,8 +67,11 @@ struct MainWindow : Module
 					std::string image_path = OpenFileDialog("jpg,png");
 					cpu::Image image(image_path);
 					RateDitailsOnImage(image);
-					mImage = CreateRef<Texture2D>(Renderer::ResizeTexture2D(image, 400, 300));
+					mImage  = CreateRef<Texture2D>(Renderer::ResizeTexture2D(image, 400, 200));
+					mPixels = CreateRef<std::vector<Pixel>>(GetPixels(*mImage));
 					mSelectibleImageWindow = CreateRef<SelectibleImageWindow>(mImage);
+
+                    LOG_INFO("{} {}", mImage->GetWidth(), mImage->GetHeight());
 				}
 				catch (std::exception& e) {
 					LOG_WARN(e.what());
@@ -74,9 +80,6 @@ struct MainWindow : Module
 			
 			 if (mImage)
 			 {
-				ImGui::SameLine(0.0f, 20.0f);
-				ImGui::Image((ImTextureID)mImage->GetRendererID(), { 100.0f, 100.0f });
-			
 				ImGui::Dummy(ImVec2(0.0f, 5.0f));
 				if (ImGui::Button("Stage 2: Select area", { 200, 50 }))
 				{
@@ -87,15 +90,15 @@ struct MainWindow : Module
 				ImGui::Dummy(ImVec2(0.0f, 5.0f));
 				if (ImGui::Button("Stage 3: Run", { 200, 50 }))
 				{
-					Ref<gpu::MeanShift> meanshift  = CreateRef<gpu::MeanShift>();
-					Ref<std::vector<Pixel>> pixels = CreateRef<std::vector<Pixel>>(GetPixels(*mImage));
-			
 					float  radius = mSelectibleImageWindow->mRadius * mImage->GetWidth();
 					ImVec2 center = mSelectibleImageWindow->mCircleCenter;
 					center.x = floor(center.x * mImage->GetWidth());
 					center.y = floor(center.y * mImage->GetHeight());
 			
-					std::vector<MeanShiftBreed> population(5, MeanShiftBreed(pixels, meanshift, center, radius));
+					std::vector<MeanShiftBreed> population;
+					for (int i = 0; i < 5; i++)
+						population.push_back(MeanShiftBreed(mPixels, mMeanShift, center, radius));
+
 					auto result = GeneticAlgorithm(population, 10);
 			
 					// Print result
@@ -109,11 +112,11 @@ struct MainWindow : Module
 					{
 						MeanShitParams params = ExtractParams(entity.mGens);
 
-						LOG_INFO("Params:\n radius: {}\n distance: {}\n color: {}\n brightness: {} \n\n",
+						LOG_INFO("\nParams:\n radius: {}\n distance: {}\n color: {}\n brightness: {} \n",
 									params.Radius, params.DistanceCoef, params.ColorCoef, params.BrightnessCoef);
 					}
 			
-					auto clusters = meanshift->Run(*pixels, params, &snapshots);
+					auto clusters = mMeanShift->Run(*mPixels, params, &snapshots);
 					
 					// Draw snapshots
 					UI::AddModule<ImageGralleryWindow>(GetRefImagesFromPixelData(snapshots, mImage->mSpecification));
@@ -121,21 +124,30 @@ struct MainWindow : Module
 					// Draw clusters
 					UI::AddModule<ImageWindow>(GetImageFromClusters(clusters, mImage->mSpecification));
 					
-					int evaluation = MeanshiftEvaluation(clusters, center, radius);
+					int evaluation = CalculateTargetValue(clusters, center, radius);
 					LOG_INFO("Evalueation: {}", evaluation);
 				}
 			 }
+			ImGui::EndChild();
 
-            static int radius = 100;
-            static int distance = 25;
-            static int color = 5;
+			if (mImage)
+			{
+				ImGui::SameLine(0.0f, 20.0f);
+				ImGui::Image((ImTextureID)mImage->GetRendererID(), ImVec2(200, 200));
+			}
+
+			ImGui::Dummy(ImVec2(0, 20));
+			static int iterations= 5;
+            static int radius   = 140;
+            static int distance = 5;
+            static int color	= 15;
             static int brightness = 1;
             static Ref<ImageWindow> image_window;
 			static Ref<ImageWindow> image_window_selected_area;
 
             if (!image_window && mImage)
             {
-                image_window = CreateRef<ImageWindow>(mImage, "test");
+                image_window = CreateRef<ImageWindow>(mImage, "segments");
                 UI::AddModule(image_window);
 
 				image_window_selected_area = CreateRef<ImageWindow>(mImage, "selected");
@@ -143,29 +155,28 @@ struct MainWindow : Module
             }
 
             bool changed = false;
+			changed |= ImGui::SliderInt("iterations", &iterations, 1, 20);
             changed |= ImGui::SliderInt("Radius",     &radius,     50, 300);
-            changed |= ImGui::SliderInt("distance",   &distance,   0,  100);
-            changed |= ImGui::SliderInt("color",      &color,      0,  100);
-            changed |= ImGui::SliderInt("brightness", &brightness, 0,  100);
+            changed |= ImGui::SliderInt("distance",   &distance,   1,  100);
+            changed |= ImGui::SliderInt("color",      &color,      1,  100);
+            changed |= ImGui::SliderInt("brightness", &brightness, 1,  100);
 
             if (changed)
             {
-                static Ref<gpu::MeanShift> meanshift  = CreateRef<gpu::MeanShift>();
-                static Ref<std::vector<Pixel>> pixels = CreateRef<std::vector<Pixel>>(GetPixels(*mImage));
-
                 MeanShitParams params;
+				params.Iterations = iterations;
                 params.Radius = radius;
                 params.DistanceCoef = distance;
                 params.ColorCoef = color;
                 params.BrightnessCoef = brightness;
 
-                auto clusters = meanshift->Run(*pixels, params);
+                auto clusters = mMeanShift->Run(*mPixels, params);
                 image_window->mImage = CreateRef<gpu::Image>(GetImageFromClusters(clusters, mImage->mSpecification));
 
-				float w = floor(mSelectibleImageWindow->mCircleCenter.x * mImage->GetWidth());
-				float h = floor(mSelectibleImageWindow->mCircleCenter.y * mImage->GetHeight());
+				float x = floor(mSelectibleImageWindow->mPointInClass.x * mImage->GetWidth());
+				float y = floor(mSelectibleImageWindow->mPointInClass.y * mImage->GetHeight());
 
-				auto cluster_id = GetClusterByPixel(clusters, Pixel{ w, h });
+				auto cluster_id = GetClusterByPixel(clusters, ImVec2(x, y));
 				image_window_selected_area->mImage =
 					CreateRef<gpu::Image>(GetImageFromCluster(clusters[cluster_id], mImage->mSpecification));
             }
