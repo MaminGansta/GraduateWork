@@ -6,6 +6,6 @@
 namespace cpu
 {
 
-Image HistograsmAlignment(const Image& image);
+Image HistogramAlignment(const Image& image);
 
 }

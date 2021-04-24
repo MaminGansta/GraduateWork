@@ -37,6 +37,9 @@ namespace cpu
 					clamped_color[channel] = std::clamp(res_color[channel], 0, 255);
 				}
 
+				if (channels == 4)
+					clamped_color[3] = 255;
+
 				res.SetColor(clamped_color, x, y);
 			}
 		}

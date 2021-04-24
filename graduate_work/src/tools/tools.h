@@ -61,17 +61,52 @@ inline gpu::Image GetImageFromClusters(const std::vector<Cluster<Pixel>>& cluste
     cpu::Image image(spec);
     auto colors = GetRandomColors(clusters.size());
 
+    int sum = 0;
+
     for (int i = 0; i < clusters.size(); i++)
     {
+        sum += clusters[i].Size();
         for (const Pixel& pixel : clusters[i])
         {
             auto color = colors[i];
             image.SetColor((uint8_t*)&color, pixel.x, pixel.y);
         }
     }
+    assert(sum == spec.Width * spec.Height);
     return image.LoadOnGPU();
 }
 
+inline int GetClusterByPixel(const std::vector<Cluster<Pixel>>& clusters, Pixel pixel)
+{
+    for (int i = 0; i < clusters.size(); i++)
+    {
+        for (const Pixel& pixel_in_cluster : clusters[i])
+        {
+            if (pixel.x == pixel_in_cluster.x &&
+                pixel.y == pixel_in_cluster.y)
+            {
+                return i;
+            }
+        }
+    }
+    assert(false);
+}
+
+inline gpu::Image GetImageFromCluster(const Cluster<Pixel>& cluster, Texture2DSpecification spec)
+{
+    cpu::Image image(spec);
+    const uint8_t color[] = {255, 255, 255, 255};
+
+    auto image_size     = image.GetWidth() * image.GetHeight();
+    auto image_channels = image.GetChannels();
+    memset(image.mData.get(), 0, image_size * image_channels);
+
+    for (const Pixel& pixel : cluster)
+    {
+        image.SetColor(color, pixel.x, pixel.y);
+    }
+    return image.LoadOnGPU();
+}
 
 inline std::vector<Ref<gpu::Image>> GetRefImagesFromPixelData(const std::vector<std::vector<Pixel>>& snapshots, Texture2DSpecification spec)
 {

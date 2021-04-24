@@ -9,6 +9,8 @@
 #include "cpu/meanshift_cpu.h"
 #include "cpu/conv_calculation_cpu.h"
 #include "cpu/auto_contrast_cpu.h"
+#include "cpu/histogram_alignment.h"
+#include "cpu/YCbCr.h"
 
 #include "gpu/image_gpu.h"
 #include "gpu/meanshift_gpu.h"

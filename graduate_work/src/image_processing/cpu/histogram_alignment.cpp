@@ -4,7 +4,7 @@
 namespace cpu
 {
 
-cpu::Image cpu::HistograsmAlignment(const Image& image)
+cpu::Image cpu::HistogramAlignment(const Image& image)
 {
     Image res(Texture2DSpecification{ image.GetWidth(), image.GetHeight() });
     Histogram hist(image);
@@ -38,13 +38,13 @@ cpu::Image cpu::HistograsmAlignment(const Image& image)
         float V =  0.615f  * pixel[0] - 0.5586f * pixel[1] - 0.0563 * pixel[2];
 
         // Correction
-        Y = float(cdf[int(Y * 255.0f)] - cdf_min) / (count - 1);
+        Y = float(cdf[std::clamp<int>(Y * 255.0f, 0, 255)] - cdf_min) / (count - 1);
 
         uint8_t temp[4];
         temp[0] = std::clamp<int>(Y + 1.2803f * V, 0, 255);
         temp[1] = std::clamp<int>(Y - 0.2148f * U - 0.4805f * V, 0, 255);
         temp[2] = std::clamp<int>(Y + 2.1279f * U, 0, 255);
-        res[i] = temp;
+        res.SetColor(temp, i);
     }
 
     return res;

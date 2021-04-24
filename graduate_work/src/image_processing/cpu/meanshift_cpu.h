@@ -67,25 +67,29 @@ namespace cpu
 
             for (int i = 0; i < points.size(); i++)
             {
-                bool separate_point = true;
+                Cluster<Point>* cluster_min_dist = nullptr;
+                float min_dist = std::numeric_limits<float>::max();
 
                 for (auto& cluster : clusters)
                 {
                     auto& shifted_point = shifted_points[i];
                     auto& centroid = cluster.GetCentroid();
 
-                    if (shifted_point.Distance(centroid) < radius)
+                    float distance = shifted_point.Distance(centroid);
+                    if (distance < radius &&  distance < min_dist)
                     {
-                        cluster.AddPoint(points[i]);
-                        separate_point = false;
+                        min_dist = distance;
+                        cluster_min_dist = &cluster;
                     }
                 }
 
-                if (separate_point)
+                if (!cluster_min_dist)
                 {
                     clusters.emplace_back(shifted_points[i]);
                     clusters.back().AddPoint(points[i]);
                 }
+                else
+                    cluster_min_dist->AddPoint(points[i]);
             }
 
             return std::move(clusters);
