@@ -28,8 +28,6 @@ static auto MakeStep(std::vector<Breed>& current_generation) -> std::vector<Bree
 	/*
 		Step 1 - Calculate target values
 	*/
-	LOG_INFO("1-- start calc targer val");
-
 	std::vector<float> fitnes_values(current_generation.size(), 0.0f);
 	std::vector<float> fitnes_coeffs(current_generation.size(), 0.0f);
 	float fitnes_total = 0.0f;
@@ -40,7 +38,15 @@ static auto MakeStep(std::vector<Breed>& current_generation) -> std::vector<Bree
 	for (int i = 0; i < current_generation.size(); i++)
 	{
 		fitnes_values[i] = current_generation[i].GetTargetValue();
-        min = std::min(fitnes_values[i], min);
+		min = std::min(fitnes_values[i], min);
+	}
+
+	for (int i = 0; i < current_generation.size(); i++)
+	{
+		auto params = current_generation[i].ExtractParams();
+		LOG_INFO("{} target: {}  params: r {} d {} c {} b {} i {}",
+			i, fitnes_values[i], params.Radius, params.DistanceCoef,
+			params.ColorCoef, params.BrightnessCoef, params.Iterations);
 	}
 
 	for (int i = 0; i < current_generation.size(); i++)
@@ -56,18 +62,15 @@ static auto MakeStep(std::vector<Breed>& current_generation) -> std::vector<Bree
 		fitnes_coeffs[i] = fitnes_values[i] / fitnes_avg;
 	}
 	
-    LOG_INFO("1-- end calc targer val");
 
 	/*
 		Step 2 - Choose parents
 	*/
-    LOG_INFO("2-- start chose parents");
-
 	// Take strongest parents
 	for (int i = 0; i < current_generation.size(); i++)
 	{
-		while (fitnes_coeffs[i] > 1.0f
-			&& parents.size() < current_generation.size())
+		while (fitnes_coeffs[i] > 1.0f &&
+			   parents.size() < current_generation.size())
 		{
 			fitnes_coeffs[i] -= 1.0f;
 			parents.push_back(current_generation[i]);
@@ -86,26 +89,22 @@ static auto MakeStep(std::vector<Breed>& current_generation) -> std::vector<Bree
 		}
 	}
 
-    LOG_INFO("2-- end chose parents");
-	
 	/*
 		Step 3 - Create new generation
 	*/
-    LOG_INFO("3-- start make childs");
-
-	// Move beast entity to the next generation (Helps to avoid degradation)
-	int index = 0;
+	// Move best one to the next generation (Helps to avoid degradation)
 	float max = fitnes_values[0];
+	int max_id = 0;
 
 	for (int i = 1; i < current_generation.size(); i++)
 	{
 		if (max < fitnes_values[i])
 		{
-			index = i;
+			max_id = i;
 			max = fitnes_values[i];
 		}
 	}
-	new_generation.push_back(current_generation[index]);
+	new_generation.push_back(current_generation[max_id]);
 
 	// Make child from two parents
 	for (int i = 0; i < current_generation.size() - 1; i++)
@@ -116,14 +115,11 @@ static auto MakeStep(std::vector<Breed>& current_generation) -> std::vector<Bree
 		{
 			second_parent_id = Random::get<uint32_t>(0, current_generation.size() - 1);
 		}
-		Breed child = parents[first_parent_id];
-		child = parents[first_parent_id].Crossover(parents[second_parent_id]);
+		Breed child = parents[first_parent_id].Crossover(parents[second_parent_id]);
 		child.Mutation();
 		new_generation.push_back(child);
 	}
 	
-	LOG_INFO("3-- end make childs");
-
 	return new_generation;
 }
 
@@ -131,12 +127,12 @@ static auto MakeStep(std::vector<Breed>& current_generation) -> std::vector<Bree
 template <ValidBreed Breed>
 auto GeneticAlgorithm(std::vector<Breed> population, int steps) -> std::vector<std::vector<Breed>>
 {
-	std::vector<std::vector<Breed>> trace;
+	std::vector<std::vector<Breed>> steps_trace{ population };
 
 	for (int generation = 0; generation < steps; generation++)
 	{
-		LOG_INFO("Iteration: {}", generation);
-		trace.push_back(MakeStep(population));
+		LOG_INFO("============== Iteration: {} ===============", generation);
+		steps_trace.push_back(MakeStep(steps_trace.back()));
 	}
-	return trace;
+	return steps_trace;
 }

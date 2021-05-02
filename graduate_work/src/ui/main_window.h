@@ -49,6 +49,7 @@ struct MainWindow : Module
 	Ref<std::vector<Pixel>> mPixels;
 	Ref<SelectibleImageWindow> mSelectibleImageWindow;
 	Ref<gpu::MeanShift> mMeanShift = CreateRef<gpu::MeanShift>();
+	MeanShitParams mStaticMSParams{ 5, 140, 5, 15, 1 };
 
 	MainWindow()
 	{
@@ -57,21 +58,21 @@ struct MainWindow : Module
 
 	void Draw(DeltaTime dt) override
 	{
+		bool ms_params_changed = false;
+
         ImGui::Begin("Main window", NULL, mWindowFlags);
         {
-			ImGui::BeginChild("Steps", ImVec2(200, 200));
+			ImGui::BeginChild("Steps", ImVec2(300, 200));
 
-			if (ImGui::Button("Stage 1: Choose image", { 200, 50 }))
+			if (ImGui::Button("Step 1: Choose image", { 200, 50 }))
 			{
 				try {
 					std::string image_path = OpenFileDialog("jpg,png");
 					cpu::Image image(image_path);
 					RateDitailsOnImage(image);
-					mImage  = CreateRef<Texture2D>(Renderer::ResizeTexture2D(image, 400, 200));
+					mImage  = CreateRef<Texture2D>(Renderer::ResizeTexture2D(image, 200, 200));
 					mPixels = CreateRef<std::vector<Pixel>>(GetPixels(*mImage));
 					mSelectibleImageWindow = CreateRef<SelectibleImageWindow>(mImage);
-
-                    LOG_INFO("{} {}", mImage->GetWidth(), mImage->GetHeight());
 				}
 				catch (std::exception& e) {
 					LOG_WARN(e.what());
@@ -81,51 +82,52 @@ struct MainWindow : Module
 			 if (mImage)
 			 {
 				ImGui::Dummy(ImVec2(0.0f, 5.0f));
-				if (ImGui::Button("Stage 2: Select area", { 200, 50 }))
+				if (ImGui::Button("Step 2: Select area", { 200, 50 }))
 				{
 					mSelectibleImageWindow->mIsOpen = true;
 					UI::AddModule(mSelectibleImageWindow);
 				}
 			
 				ImGui::Dummy(ImVec2(0.0f, 5.0f));
-				if (ImGui::Button("Stage 3: Run", { 200, 50 }))
+				if (ImGui::Button("Step 3: Run", { 200, 50 }))
 				{
-					float  radius = mSelectibleImageWindow->mRadius * mImage->GetWidth();
-					ImVec2 center = mSelectibleImageWindow->mCircleCenter;
-					center.x = floor(center.x * mImage->GetWidth());
-					center.y = floor(center.y * mImage->GetHeight());
-			
+					auto [class_point, circle_center, circle_radius] = ExtractOutliningParams();
+
 					std::vector<MeanShiftBreed> population;
 					for (int i = 0; i < 5; i++)
-						population.push_back(MeanShiftBreed(mPixels, mMeanShift, center, radius));
+						population.push_back(MeanShiftBreed(mPixels, mMeanShift.get(), class_point, circle_center, circle_radius));
 
 					auto result = GeneticAlgorithm(population, 10);
 			
-					// Print result
-					std::vector<std::vector<Pixel>> snapshots;
-					MeanShitParams params = ExtractParams(result.back()[0].mGens);
+					// Interprit result
+					int   id = -1;
+					int   max_id = 0;
+					float max_target_value = -1e5;
 
-					//LOG_INFO("Params:\n radius: {}\n distance: {}\n color: {}\n brightness: {} \n\n",
-					//			params.Radius, params.DistanceCoef, params.ColorCoef, params.BrightnessCoef);
-
-					for (const auto& entity : result.back())
+					for (auto& entity : result.back())
 					{
-						MeanShitParams params = ExtractParams(entity.mGens);
+						id++;
+						float target_value = entity.GetTargetValue();
+						MeanShitParams params = entity.ExtractParams();
 
-						LOG_INFO("\nParams:\n radius: {}\n distance: {}\n color: {}\n brightness: {} \n",
-									params.Radius, params.DistanceCoef, params.ColorCoef, params.BrightnessCoef);
+						if (max_target_value < target_value)
+						{
+							max_target_value = target_value;
+							max_id = id;
+						}
+
+						LOG_INFO("Target: {} Params: radius: {} distance: {} color: {} brightness: {}",
+									target_value, params.Radius, params.DistanceCoef, params.ColorCoef, params.BrightnessCoef);
 					}
-			
-					auto clusters = mMeanShift->Run(*mPixels, params, &snapshots);
-					
+
+					ms_params_changed = true;
+					mStaticMSParams = result.back()[max_id].ExtractParams();
+
+					std::vector<std::vector<Pixel>> snapshots;
+					auto clusters = mMeanShift->Run(*mPixels, mStaticMSParams, &snapshots);
+					 
 					// Draw snapshots
 					UI::AddModule<ImageGralleryWindow>(GetRefImagesFromPixelData(snapshots, mImage->mSpecification));
-					
-					// Draw clusters
-					UI::AddModule<ImageWindow>(GetImageFromClusters(clusters, mImage->mSpecification));
-					
-					int evaluation = CalculateTargetValue(clusters, center, radius);
-					LOG_INFO("Evalueation: {}", evaluation);
 				}
 			 }
 			ImGui::EndChild();
@@ -137,52 +139,65 @@ struct MainWindow : Module
 			}
 
 			ImGui::Dummy(ImVec2(0, 20));
-			static int iterations= 5;
-            static int radius   = 140;
-            static int distance = 5;
-            static int color	= 15;
-            static int brightness = 1;
-            static Ref<ImageWindow> image_window;
+			static Ref<ImageWindow> image_window;
 			static Ref<ImageWindow> image_window_selected_area;
 
-            if (!image_window && mImage)
-            {
-                image_window = CreateRef<ImageWindow>(mImage, "segments");
-                UI::AddModule(image_window);
+			if (!image_window && mImage)
+			{
+			    image_window = CreateRef<ImageWindow>(mImage, "segments");
+			    UI::AddModule(image_window);
 
-				image_window_selected_area = CreateRef<ImageWindow>(mImage, "selected");
-                UI::AddModule(image_window_selected_area);
-            }
+				 image_window_selected_area = CreateRef<ImageWindow>(mImage, "selected");
+			    UI::AddModule(image_window_selected_area);
+			}
 
-            bool changed = false;
-			changed |= ImGui::SliderInt("iterations", &iterations, 1, 20);
-            changed |= ImGui::SliderInt("Radius",     &radius,     50, 300);
-            changed |= ImGui::SliderInt("distance",   &distance,   1,  100);
-            changed |= ImGui::SliderInt("color",      &color,      1,  100);
-            changed |= ImGui::SliderInt("brightness", &brightness, 1,  100);
+			ms_params_changed |= ImGui::SliderInt("iterations", &mStaticMSParams.Iterations,     1,  20);
+			ms_params_changed |= ImGui::SliderInt("Radius",     &mStaticMSParams.Radius,         50, 300);
+			ms_params_changed |= ImGui::SliderInt("distance",   &mStaticMSParams.DistanceCoef,   1,  100);
+			ms_params_changed |= ImGui::SliderInt("color",      &mStaticMSParams.ColorCoef,      1,  100);
+			ms_params_changed |= ImGui::SliderInt("brightness", &mStaticMSParams.BrightnessCoef, 1,  100);
 
-            if (changed)
-            {
-                MeanShitParams params;
-				params.Iterations = iterations;
-                params.Radius = radius;
-                params.DistanceCoef = distance;
-                params.ColorCoef = color;
-                params.BrightnessCoef = brightness;
+			if (ImGui::Button("Apply", ImVec2(50, 30)))
+			{
+				ms_params_changed = true;
+			}
 
-                auto clusters = mMeanShift->Run(*mPixels, params);
-                image_window->mImage = CreateRef<gpu::Image>(GetImageFromClusters(clusters, mImage->mSpecification));
+			if (ms_params_changed)
+			{
+			    auto clusters = mMeanShift->Run(*mPixels, mStaticMSParams);
+			    image_window->mImage = CreateRef<gpu::Image>(GetImageFromClusters(clusters, mImage->mSpecification));
 
-				float x = floor(mSelectibleImageWindow->mPointInClass.x * mImage->GetWidth());
-				float y = floor(mSelectibleImageWindow->mPointInClass.y * mImage->GetHeight());
+				auto [class_point, circle_center, circle_radius] = ExtractOutliningParams();
 
-				auto cluster_id = GetClusterByPixel(clusters, ImVec2(x, y));
+				// Draw selected cluster
+				auto cluster_id = GetClusterByPixel(clusters, class_point);
 				image_window_selected_area->mImage =
 					CreateRef<gpu::Image>(GetImageFromCluster(clusters[cluster_id], mImage->mSpecification));
-            }
+
+				int target = CalculateTargetValue(clusters, class_point, circle_center, circle_radius);
+				
+				LOG_INFO("target: {}  params: r {} d {} c {} b {} i {}",
+					target, mStaticMSParams.Radius, mStaticMSParams.DistanceCoef,mStaticMSParams.ColorCoef,
+					mStaticMSParams.BrightnessCoef, mStaticMSParams.Iterations);
+			}
 
 		}
 		ImGui::End();
+	}
+
+
+	std::tuple<ImVec2, ImVec2, float> ExtractOutliningParams()
+	{
+		float  circle_radius = mSelectibleImageWindow->mRadius * mImage->GetWidth();
+		ImVec2 circle_center = mSelectibleImageWindow->mCircleCenter;
+		circle_center.x = floor(circle_center.x * mImage->GetWidth());
+		circle_center.y = floor(circle_center.y * mImage->GetHeight());
+
+		ImVec2 class_point = mSelectibleImageWindow->mPointInClass;
+		class_point.x = floor(class_point.x * mImage->GetWidth());
+		class_point.y = floor(class_point.y * mImage->GetHeight());
+
+		return { class_point, circle_center, circle_radius };
 	}
 
 };

@@ -42,7 +42,7 @@ __kernel void MeanShift(__global float8* input,
 		float8 pixel = input[i];
 		double distance = PixelDistance(active_pixel, pixel, distance_coef, color_coef, brightness_coef);
 	
-		if (distance < radius * 2)
+		if (distance < radius * 3)
 		{
 			double influance = exp(-(distance * distance) / (2.0f * radius * radius));
 			mean_pixel += pixel * influance;

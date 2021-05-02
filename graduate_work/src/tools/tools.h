@@ -83,8 +83,8 @@ inline int GetClusterByPixel(const std::vector<Cluster<Pixel>>& clusters, Point 
     {
         for (const Pixel& pixel_in_cluster : clusters[i])
         {
-            if (point.x == pixel_in_cluster.x &&
-                point.y == pixel_in_cluster.y)
+            if ((int)point.x == (int)pixel_in_cluster.x &&
+                (int)point.y == (int)pixel_in_cluster.y)
             {
                 return i;
             }
@@ -132,12 +132,12 @@ inline std::vector<Ref<gpu::Image>> GetRefImagesFromPixelData(const std::vector<
 int Metric(const Pixel& pixel, ImVec2 center, float radius)
 {
     float distance = sqrt(pow(pixel.x - center.x, 2) + pow(pixel.y - center.y, 2));
-    return distance <= radius ? 1 : -(distance - radius) / (radius / 10);
+    return distance <= radius ? 1 : -5;
 }
 
-inline int CalculateTargetValue(const std::vector<Cluster<Pixel>>& clusters, ImVec2 center, float radius)
+inline int CalculateTargetValue(const std::vector<Cluster<Pixel>>& clusters, ImVec2 class_point, ImVec2 center, float radius)
 {
-    int cluster_id = GetClusterByPixel(clusters, center);
+    int cluster_id = GetClusterByPixel(clusters, class_point);
 
     int result = 0;
     for (const Pixel& pixel : clusters[cluster_id])

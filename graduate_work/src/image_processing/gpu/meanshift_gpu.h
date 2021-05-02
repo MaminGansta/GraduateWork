@@ -6,9 +6,9 @@
 
 struct MeanShitParams
 {
-	int Iterations	   = 1;
+	int Iterations	   = 5;
 	int Radius		   = 0;
-	int DistanceCoef   = 0;
+	int DistanceCoef  = 0;
 	int ColorCoef	   = 0;
 	int BrightnessCoef = 0;
 };
@@ -44,8 +44,6 @@ struct MeanShift
 										   MeanShitParams params, 
 										   std::vector<std::vector<Pixel>>* snapshots = nullptr)
 	{
-		LOG_INFO("start ms internal  params r {} d {} c {} b {} i {}", params.Radius, params.DistanceCoef, params.ColorCoef, params.BrightnessCoef, params.Iterations);
-
 		std::vector<Pixel> shifted(pixels.size());
 		
 		if (snapshots)
@@ -83,9 +81,6 @@ struct MeanShift
 		}
 
 		clcall(mQueue.enqueueReadBuffer(mBuffers[active_buffer_id], GL_TRUE, 0, sizeof(Pixel) * pixels.size(), shifted.data()));
-
-		LOG_INFO("end ms internal");
-
 		return cpu::MeanShift::CreateClusters(pixels, shifted, params.Radius);
 	}
 
