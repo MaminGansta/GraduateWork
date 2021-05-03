@@ -3,13 +3,20 @@
 #include "bubble.h"
 
 
-struct ImageGralleryWindow : Module
+struct ImageGalleryWindow : Module
 {
 	std::vector<Ref<Texture2D>> mImages;
 
-	ImageGralleryWindow(const std::vector<Ref<Texture2D>>& images)
-		: mImages(images)
+	ImageGalleryWindow() = default;
+
+	ImageGalleryWindow(std::vector<Ref<Texture2D>> images)
+		: mImages(std::move(images))
 	{}
+
+	void SetImages(std::vector<Ref<Texture2D>> images)
+	{
+		mImages = std::move(images);
+	}
 
 	void Draw(DeltaTime dt)
 	{

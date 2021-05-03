@@ -48,6 +48,7 @@ struct MainWindow : Module
 	Ref<Texture2D> mImage;
 	Ref<std::vector<Pixel>> mPixels;
 	Ref<SelectibleImageWindow> mSelectibleImageWindow;
+	Ref<ImageGalleryWindow> mImageGalleryWindow;
 	Ref<gpu::MeanShift> mMeanShift = CreateRef<gpu::MeanShift>();
 	MeanShitParams mStaticMSParams{ 5, 140, 5, 15, 1 };
 
@@ -73,6 +74,8 @@ struct MainWindow : Module
 					mImage  = CreateRef<Texture2D>(Renderer::ResizeTexture2D(image, 200, 200));
 					mPixels = CreateRef<std::vector<Pixel>>(GetPixels(*mImage));
 					mSelectibleImageWindow = CreateRef<SelectibleImageWindow>(mImage);
+					mImageGalleryWindow	   = CreateRef<ImageGalleryWindow>();
+					UI::AddModule(mImageGalleryWindow);
 				}
 				catch (std::exception& e) {
 					LOG_WARN(e.what());
@@ -125,9 +128,7 @@ struct MainWindow : Module
 
 					std::vector<std::vector<Pixel>> snapshots;
 					auto clusters = mMeanShift->Run(*mPixels, mStaticMSParams, &snapshots);
-					 
-					// Draw snapshots
-					UI::AddModule<ImageGralleryWindow>(GetRefImagesFromPixelData(snapshots, mImage->mSpecification));
+					mImageGalleryWindow->SetImages(GetRefImagesFromPixelData(snapshots, mImage->mSpecification));
 				}
 			 }
 			ImGui::EndChild();
@@ -151,20 +152,26 @@ struct MainWindow : Module
 			    UI::AddModule(image_window_selected_area);
 			}
 
-			ms_params_changed |= ImGui::SliderInt("iterations", &mStaticMSParams.Iterations,     1,  20);
-			ms_params_changed |= ImGui::SliderInt("Radius",     &mStaticMSParams.Radius,         50, 300);
-			ms_params_changed |= ImGui::SliderInt("distance",   &mStaticMSParams.DistanceCoef,   1,  100);
-			ms_params_changed |= ImGui::SliderInt("color",      &mStaticMSParams.ColorCoef,      1,  100);
-			ms_params_changed |= ImGui::SliderInt("brightness", &mStaticMSParams.BrightnessCoef, 1,  100);
-
-			if (ImGui::Button("Apply", ImVec2(50, 30)))
+			if (mImage)
 			{
-				ms_params_changed = true;
+				ms_params_changed |= ImGui::SliderInt("iterations", &mStaticMSParams.Iterations, 1, 20);
+				ms_params_changed |= ImGui::SliderInt("Radius", &mStaticMSParams.Radius, 50, 300);
+				ms_params_changed |= ImGui::SliderInt("distance", &mStaticMSParams.DistanceCoef, 1, 100);
+				ms_params_changed |= ImGui::SliderInt("color", &mStaticMSParams.ColorCoef, 1, 100);
+				ms_params_changed |= ImGui::SliderInt("brightness", &mStaticMSParams.BrightnessCoef, 1, 100);
+
+				if (ImGui::Button("Apply", ImVec2(50, 30)))
+				{
+					ms_params_changed = true;
+				}
 			}
 
 			if (ms_params_changed)
 			{
-			    auto clusters = mMeanShift->Run(*mPixels, mStaticMSParams);
+				std::vector<std::vector<Pixel>> snapshots;
+				auto clusters = mMeanShift->Run(*mPixels, mStaticMSParams, &snapshots);
+				mImageGalleryWindow->SetImages(GetRefImagesFromPixelData(snapshots, mImage->mSpecification));
+
 			    image_window->mImage = CreateRef<gpu::Image>(GetImageFromClusters(clusters, mImage->mSpecification));
 
 				auto [class_point, circle_center, circle_radius] = ExtractOutliningParams();
@@ -185,7 +192,9 @@ struct MainWindow : Module
 		ImGui::End();
 	}
 
-
+	/**
+	* @return class_point, circle_center, circle_radius
+	*/
 	std::tuple<ImVec2, ImVec2, float> ExtractOutliningParams()
 	{
 		float  circle_radius = mSelectibleImageWindow->mRadius * mImage->GetWidth();
