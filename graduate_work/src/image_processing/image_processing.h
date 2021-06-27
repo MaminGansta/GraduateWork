@@ -7,6 +7,8 @@
 
 #include "cpu/image_cpu.h"
 #include "cpu/meanshift_cpu.h"
+#include "cpu/meanshiftpp_cpu.h"
+#include "cpu/meanshiftpp_v2_cpu.h"
 #include "cpu/conv_calculation_cpu.h"
 #include "cpu/auto_contrast_cpu.h"
 #include "cpu/histogram_alignment.h"

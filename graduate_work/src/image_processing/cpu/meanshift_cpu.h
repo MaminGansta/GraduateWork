@@ -60,7 +60,7 @@ namespace cpu
         template <typename Point>
         static std::vector<Cluster<Point>> CreateClusters(const std::vector<Point>& points,
                                                           const std::vector<Point>& shifted_points,
-                                                          float radius)
+                                                          MeanShitParams params)
         {
             std::vector<Cluster<Point>> clusters;
             clusters.reserve(points.size());
@@ -75,8 +75,8 @@ namespace cpu
                     auto& shifted_point = shifted_points[i];
                     auto& centroid = cluster.GetCentroid();
 
-                    float distance = shifted_point.Distance(centroid);
-                    if (distance < radius &&  distance < min_dist)
+                    float distance = shifted_point.Distance(centroid, params);
+                    if (distance < params.Radius &&  distance < min_dist)
                     {
                         min_dist = distance;
                         cluster_min_dist = &cluster;

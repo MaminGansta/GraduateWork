@@ -2,16 +2,9 @@
 
 #include "bubble.h"
 #include "tools.h"
+#include "data_structures/ms_params.h"
 #include "cpu/meanshift_cpu.h"
 
-struct MeanShitParams
-{
-	int Iterations	   = 5;
-	int Radius		   = 0;
-	int DistanceCoef  = 0;
-	int ColorCoef	   = 0;
-	int BrightnessCoef = 0;
-};
 
 namespace gpu
 {
@@ -81,7 +74,7 @@ struct MeanShift
 		}
 
 		clcall(mQueue.enqueueReadBuffer(mBuffers[active_buffer_id], GL_TRUE, 0, sizeof(Pixel) * pixels.size(), shifted.data()));
-		return cpu::MeanShift::CreateClusters(pixels, shifted, params.Radius);
+		return cpu::MeanShift::CreateClusters(pixels, shifted, params);
 	}
 
 };

@@ -44,9 +44,12 @@ __kernel void MeanShift(__global float8* input,
 	
 		if (distance < radius * 3)
 		{
-			double influance = exp(-(distance * distance) / (2.0f * radius * radius));
-			mean_pixel += pixel * influance;
-			total += influance;
+			//double influance = exp(-(distance * distance) / (2.0f * radius * radius));
+			//mean_pixel += pixel * influance;
+			//total += influance;
+
+			mean_pixel += pixel;
+			total += 1.0f;
 		}
 	}
 	mean_pixel /= total;

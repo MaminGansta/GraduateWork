@@ -50,7 +50,7 @@ struct MainWindow : Module
 	Ref<SelectibleImageWindow> mSelectibleImageWindow;
 	Ref<ImageGalleryWindow> mImageGalleryWindow;
 	Ref<gpu::MeanShift> mMeanShift = CreateRef<gpu::MeanShift>();
-	MeanShitParams mStaticMSParams{ 5, 140, 5, 15, 1 };
+	MeanShitParams mStaticMSParams{ 5, 140, 1, 1, 1 };
 
 	MainWindow()
 	{
@@ -102,7 +102,7 @@ struct MainWindow : Module
 
 					auto result = GeneticAlgorithm(population, 10);
 			
-					// Interprit result
+					// Interpret result 
 					int   id = -1;
 					int   max_id = 0;
 					float max_target_value = -1e5;
@@ -155,7 +155,7 @@ struct MainWindow : Module
 			if (mImage)
 			{
 				ms_params_changed |= ImGui::SliderInt("iterations", &mStaticMSParams.Iterations, 1, 20);
-				ms_params_changed |= ImGui::SliderInt("Radius", &mStaticMSParams.Radius, 50, 300);
+				ms_params_changed |= ImGui::SliderInt("Radius", &mStaticMSParams.Radius, 20, 300);
 				ms_params_changed |= ImGui::SliderInt("distance", &mStaticMSParams.DistanceCoef, 1, 100);
 				ms_params_changed |= ImGui::SliderInt("color", &mStaticMSParams.ColorCoef, 1, 100);
 				ms_params_changed |= ImGui::SliderInt("brightness", &mStaticMSParams.BrightnessCoef, 1, 100);
@@ -171,30 +171,30 @@ struct MainWindow : Module
 				std::vector<std::vector<Pixel>> snapshots;
 				auto clusters = mMeanShift->Run(*mPixels, mStaticMSParams, &snapshots);
 				mImageGalleryWindow->SetImages(GetRefImagesFromPixelData(snapshots, mImage->mSpecification));
-
+				
 			    image_window->mImage = CreateRef<gpu::Image>(GetImageFromClusters(clusters, mImage->mSpecification));
-
+				
 				auto [class_point, circle_center, circle_radius] = ExtractOutliningParams();
-
+				
 				// Draw selected cluster
 				auto cluster_id = GetClusterByPixel(clusters, class_point);
 				image_window_selected_area->mImage =
 					CreateRef<gpu::Image>(GetImageFromCluster(clusters[cluster_id], mImage->mSpecification));
-
+				
 				int target = CalculateTargetValue(clusters, class_point, circle_center, circle_radius);
 				
 				LOG_INFO("target: {}  params: r {} d {} c {} b {} i {}",
 					target, mStaticMSParams.Radius, mStaticMSParams.DistanceCoef,mStaticMSParams.ColorCoef,
 					mStaticMSParams.BrightnessCoef, mStaticMSParams.Iterations);
+
+                //auto clusters = cpu::MeanShiftPP::Run(*mPixels, mStaticMSParams);
+                //image_window->mImage = CreateRef<gpu::Image>(GetImageFromClusters(clusters, mImage->mSpecification));
 			}
 
 		}
 		ImGui::End();
 	}
 
-	/**
-	* @return class_point, circle_center, circle_radius
-	*/
 	std::tuple<ImVec2, ImVec2, float> ExtractOutliningParams()
 	{
 		float  circle_radius = mSelectibleImageWindow->mRadius * mImage->GetWidth();
